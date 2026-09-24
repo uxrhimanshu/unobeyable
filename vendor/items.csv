@@ -1,0 +1,672 @@
+item_id,code,permalink,text
+26584730,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=26584730,"This is an attempt at a solution to the problem of ""I have a LAN service or an IOT device, and it can't serve HTTPS because it isn't on the open internet to reach Let's Encrypt"".
+
+It's becoming increasingly troublesome these days to run a service on insecure HTTP. Doubly so to run a service with a self signed certificate, which gets treated as a sign of evil intent by all browsers. Creating your own CA cert and installing it as a trust root is possible, but bothersome. It's implausible for non technical people to learn to do this.
+
+Servers on the open internet can use Let's Encrypt to prove that they control their site, and obtain a certificate. This isn't true if the service is on a LAN-local IP and not accessible from outside. For example, a device that puts itself on your Wi-Fi.
+
+New idea: suppose there is a service that exists on your LAN, perhaps normally living in your router the same way that DHCP does, and it exposes two operations:
+
+- get a CA cert: used by browsers accessing HTTPS sites when they are on the LAN, the CA cert is included among the trust roots for this one operation.
+
+- get a signed HTTPS cert: used by services in a similar way to Let's Encrypt to obtain a certificate that identifies them as a secure service on the LAN. Might either be open access (on a home Wi-Fi router) or whitelisted (in an office).
+
+Over to you HN, do you think this is a good idea?"
+26585159,informed-acceptance,https://news.ycombinator.com/item?id=26585159,"This will give a creepy feeling to many security experts, but here's my two cents:
+
+The only issue with this scheme is that any device that trusts your ""internal CA"" can be MITM'd as easily as someone can use/abuse your ""get a signed HTTPS cert"" functionality.
+
+Assuming your LAN is truly not connected to the internet in any form or way, it seems like the benefits outweigh the risks --- no connection to the internet, fewer chances to MITM to begin with...
+
+As an additional security measure, you could use a PKIX name contraint [?] to restrict your CA to be trusted only for *.myinternal.lan, so even if your internal CA issued a cert for mail.google.com, it would be rejected by the cert chain verification. ([?]: not entirely sure this works everywhere)
+
+Alternatively, if this is a limited internet scenario, and not a truly no uplink whatsoever, maybe you could get a wildcard LetsEncrypt cert, and share that across your IOT devices."
+26585746,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=26585746,"some standard way
+
+Browsers and IoT today have no standard way to do this today aside from corporate managed workstations like active directory policies. The mechanisms could include broadcast packets like ssdp, or DHCP options with some mangled use of wpad_url, but the browsers and IoT today don't have such a mechanism for certs. So it will be on you or a team you build to write the RFC's for this, create standard client libraries that can be used in IoT and browsers, then get everyone to adopt them. Maybe a smaller baby-step would be to see if there is a way to write the client as a browser addon. Assuming this is even possible with the sandboxing of addons today, if it became popular enough, maybe browser vendors would uptake your code as a standard function in the browser. IoT manufacturers are all over the board on standards and seldom agree on one thing. Maybe you could start with high end enterprise IoT devices that live on corporate networks. Some generic IoT devices today work around this by just accepting any cert but you can't predict what devices will do this."
+31409704,informed-acceptance,https://news.ycombinator.com/item?id=31409704,Did you reply to HTTPS requests before with no or an invalid certificate that the customer might have approved to use anyways? Then the domain will be marked unsecure until he restarts his browser. You current HTTPS setup seems to be valid (https://www.ssllabs.com/ssltest/analyze.html?d=planodi.com&h...).
+33107611,workaround-becomes-standard,https://news.ycombinator.com/item?id=33107611,"Recently I've been setting up a private network for myself and I wanted to expose some services over HTTPS. The only reliable method I came up with was to buy a public domain and point its DNS records to private IPs, then I could generate Let's Encrypt certificates with a DNS challenge.
+
+The downside is that my internal domain names are now public (e.g. you can find them by looking up issued certificates for my domain through https://crt.sh or https://developers.facebook.com/tools/ct/, or by looking up the public DNS records).
+
+I could keep it all private if I set up my own root certificate, trusted it on all of my machines, and issued self-signed certificates. I could also set up my own DNS server and make all my machines use it. Needless to say, that's way more hassle than just making everything public and buying a domain.
+
+Another way to keep it private is to issue a wildcard certificate through Let's Encrypt and point my DNS records to a reverse proxy which would use the certificate. This would require all network traffic to pass through the proxy, making it a single point of failure.
+
+Have you encountered this problem before? Did you solve making your internal DNS private?"
+33111903,workaround-becomes-standard,https://news.ycombinator.com/item?id=33111903,"I have several services exposed to the internet which I also use internally. I also have some services which I just run internally.
+
+I run split horizon DNS[0] (As I manage both my internal and external DNS zones), which works just fine.
+
+For external-facing services, I use Let's Encrypt (LE) certs and when internal services run on the same hosts, I use those LE certs for TLS/HTTPS.
+
+For internal only services, where encryption is desired, I use self-signed certs. That said, in many cases, since the internal services don't actually have any data that needs data privacy across my internal network (e.g., Podgrab[1], Deluge-web[2], etc.), often I don't bother.
+
+I'm not sure (but I probably would) if I'd go that way in setting this up in 2022 (the origins of this set up go back to the 20th century), but it works for me and as it's already set up, there isn't much to do except maintain and update the zones/certs.
+
+It's not that hard or that big a deal, IMHO.
+
+[0] https://en.wikipedia.org/wiki/Split-horizon_DNS
+
+[1] https://github.com/akhilrex/podgrab
+
+[2] https://github.com/MAESTROHANTER/deluge-web
+
+Edit: Added missing references."
+33112247,trust-store-unmaintainable,https://news.ycombinator.com/item?id=33112247,"I run a ACME server with smallstep, but yeah, that means I had to install my CA on all devices. At least it's limited to my internal domain.
+
+DNS is handled by piHole, which forward internal requests to the opnsense. DHCP clients are on their own subdomain.
+
+The opnsense ACME clients doesn't refresh the cert properly (I have a low life time), but other than that it works nice.
+All services force HTTPS, except Mealie and the ""homepage"" (for guest access)."
+33133644,informed-acceptance,https://news.ycombinator.com/item?id=33133644,"It happens often (at home, mobile or random wifi networks): Chrome shows a warning that a website is not secure and asks if I want to proceed. I do and the website shows the lock icon and the certificate is valid.
+
+It just happened with HN.
+
+What gives?"
+34653090,workaround-becomes-standard,https://news.ycombinator.com/item?id=34653090,"have a Kubernetes cluster (release 1.23.4) working using Traefik(release 2.7.0). I would like to access the kubernetes dashboard through IngressRoute Traefix, everything seems to work correctly no error in the log of the Traefik pod and the dashboard but when i want to access the kubernetes dashboard it can not access the page: https://k8sdash.kub.techlabnews.com/api/v1/login/status and I have an error 404.(log in the firefox console).
+
+Use this code for create the IngressRoute :
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+ name: kubernetes-dashboard-transport
+ namespace: kubernetes-dashboard
+
+spec:
+ serverName: ""k8sdash.kub.techlabnews.com"" 
+ insecureSkipVerify: true
+
+--- 
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+ name: kubernetes-dashboard
+ namespace: kubernetes-dashboard
+spec:
+ entryPoints:
+ - websecure
+ routes:
+ - kind: Rule
+ match: Host(`k8sdash.kub.techlabnews.com`)
+ services:
+ - kind: Service
+ port: 443
+ name: kubernetes-dashboard
+ namespace: kubernetes-dashboard
+ serversTransport: kubernetes-dashboard-transport
+ tls:
+ secretName: kub.techlabnews-com-cert-secret-replica"
+36505419,trust-store-unmaintainable,https://news.ycombinator.com/item?id=36505419,"Don’t bake trust stores into container images. At work we have a single place where trusted certs (commercial CAs plus our company root CA) are configured, and then those are mounted in the appropriate format (big PEM file for /etc/ssl, trust store for Java apps, etc) as a volume in deployments in all clusters.
+
+This means that trust store updates are not dependent on the OS vendor, they’re consistent between native/Java/etc, and updates don’t require rebuilding container images."
+36505958,trust-store-unmaintainable,https://news.ycombinator.com/item?id=36505958,"That’s kind of the same problem as mentioned here though, you still have to mount that root CA in all your pods.
+
+An internal CA is also, while achievable with cert-manager these days, not exactly trivial to set up."
+36506110,trust-store-unmaintainable,https://news.ycombinator.com/item?id=36506110,"Yes an internal CA is better than a self-signed-cert. However, I've come across, quite often, where an internal CA causes problems that are only at that enterprise. Using the established public CAs is generally more resilient, and there's _no reason to not_."
+36506195,org-friction-as-cause,https://news.ycombinator.com/item?id=36506195,"Unfortunately, enterprises are intensely risk averse. I worked at a place where we could only generate proper certs by manually submitting a ticket to IT and waiting probably days to get it back, giving us zero hope of applying meaningful automation. Getting certs from a proper CA was absolutely forbidden, despite our lobbying, so in a lot of cases self-signed certs were the only option if we wanted to automate."
+36506246,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=36506246,"- Certificate Transparency logs leak internal domain names, therefore potentially internal infrastructure or product still in stealth mode
+- HTTPS challenge requires opening the network to the entire internet
+- DNS challenge requires API access to the DNS provider. The DNS entries are the keys to the castle (MX mainly). Some names ever operators don’t offer sensible API access (none at all, or poor scoping (single token with global admin access))"
+36506258,workaround-becomes-standard,https://news.ycombinator.com/item?id=36506258,"From integrators' perspective, a lot of TLS stuff is often worthless, but cannot be avoided because that's how the program was written. Eg. you (an integrator) provide a service of installing and configuring Docker registry / Harbor for air-gapped systems. The intended use is to support locally deployed Kubernetes... but you have to deal with the nonsense of certificates, because removing that stuff completely from both Kubernetes and the registry is just too hard.
+
+So, self-signed certificate is the easiest and fastest way to solve this problem.
+
+PS. Also, custom CA certificates don't work well with browsers -- browsers like to cache them and won't let go of them easily. This has adverse effects on automated UI testing with Selenium. I.e. say, you need to modify something in your cert (usually something like a domain name) and then the browser will refuse to accept it because it remembers the old one somehow...
+
+Another problem is that errors related to certificates are very hard to debug. The popular libraries (eg. essentially, OpenSSL) are trash when it comes to error reporting. You never get clear error messages, nor a suggestion on how to fix errors. The whole thing lives in obscurity, and CAs are even worse documented than the process of creating self-signed certificates. So, people looking to solve a problem choose a solution they can find, instead of the best solution."
+36506755,org-friction-as-cause,https://news.ycombinator.com/item?id=36506755,"Where I work it’s months, and fights, and maybe even several meetings. And that’s only if you fill out the correct form the exact right way. Any slight deviation and your ticket is closed weeks after you opened it with the field you got wrong."
+36507168,habituation-by-design,https://news.ycombinator.com/item?id=36507168,"There are tons of reasons to not use an internal CA.
+
+First, cost. You're not just going to slap the root CA onto the network drive and let the developers have at it - you're going to need infrastructure to keep the key safe and handle automated cert provisioning and suchlike - that's going to need people to maintain it. And it'll be an important part of your infrastructure, so you'll need enough experts you can maintain round-the-clock support.
+
+Second, it reduces your security because your users will inevitably learn to ignore certificate errors.
+
+Thirdly, you'll never stop the certificate errors. Oh, you're going to set them up for both Chrome and Firefox and Edge and Safari on Windows, Mac, Linux? Oops, you forgot Android and iPhone. And your CI system. And Java and Docker and Git. And the network printer and the electronics team's network-enabled oscilloscope. Think you've covered everything? Surprise, Slack is distributed in a Snap now, it's generating certificate errors.
+
+Just have your cloud provider take care of it. Not in the cloud? A wildcard cert on your load balancer will get you 99% of the value with 1% of the work."
+36507332,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=36507332,"So I'll route my CI integration tests that test communication from application to database through the loadbalancer? And I'll teach the loadbalancer to talk to itself to talk to the autoscaling web backends it needs to talk to because only the loadbalancer has a valid certificate? Nice brain-knot.
+
+And talking about security risks, wildcard certs are especially dangerous and should be forbidden from ever existing. They just lead to ""copy it everywhere""-keys that, sooner or later, will leak. And that won't be revoked or replaced, because of course everything will break at once.
+
+Oh, and the certificate errors will also come with external CAs. Chain too long? Error in some browsers. ECC signature? Error in some browsers. Chain with different paths? Error in some browsers. 4096bit certificate somewhere? Error in some browsers. Two different valid roots? Error in some browsers."
+36507341,habituation-by-design,https://news.ycombinator.com/item?id=36507341,"The result is different when comparing to self-signed certificates. For instance, yes you should be careful with your key, but losing it makes your security as bad as when using self-signed certificates. Yes, you might be teaching some of your users to bypass the warnings. Just like when using self-signed certificates."
+36507921,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=36507921,"I think you've entirely misunderstood the discussion here. Your post seems to be about using internal certificates for an externally visible website (although I'm confused about the mention of network printers and Slack--are you thinking this is a MITM certificate? nobody had suggested using an internal CA for those things) but that's not what anyone here was talking about. They're talking about internal use for communication between your own backend services.
+
+Recall the post that started this subthread:
+
+> Having to communicate with outside is kinda overkill if you just want to have container A talking to container B.
+
+The article here is about the same.
+
+#2 and #3 in your post don't apply; we're not talking about browsers or end users at all here. #1 may apply but I think you're overstating it; Active Directory Certificate Services takes care of all that. Remember that you don't have to follow the CA Baseline Requirements as a private CA. It's harder to get rid of an ADCS PKI than to set it up."
+36508005,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=36508005,"I'm sorry but this is simply not true. Certificate Transparency logs ARE (meta?)data which would be exposed. If the certificates were meant to be reached externally, you wouldn't indeed care at all - but if they're for internal flows (e.g. App server to DB, 2 steps behind a balancer and a set of web frontends) you are indeed publishing stuff you would have rather kept private.
+
+Before this (d)evolves into a zero trust, security-by-obscurity discussion - some auditors won't certify you in some edge cases related to this, and you may be operating in a regulated sector where such a certification is necessary. Just because it doesn't impact your use case, doesn't mean this is the case for someone else."
+36508087,removing-the-warning-is-the-goal,https://news.ycombinator.com/item?id=36508087,"I have one supplier that uses letsencrypt to generate a wildcard certificate, then distributes it as part of a software update to thousands of machines in hundreds of companies across the world. The exact same certificate and key. But it gets rid of the red X in a browser so tick
+
+It's less secure than a self signed cert. OK you can't just sniff traffic and decode it thanks to Elliptic Curve, despite having the cert+key, but you can MITM just as much, and not throw an error.
+
+With a self-signed if someone has accepted and cached the self-signed cert you can't MITM them without throwing an error."
+36510367,trust-store-unmaintainable,https://news.ycombinator.com/item?id=36510367,"Simple if you’re already familiar with cert-manager.
+
+The annoying part is getting it mounted in every pod that needs it and needs to consume it, which is the point the original article made. Node has its own way of doing it, Java has its own way of doing it, etc etc and they all have their own little ideosyncracies that you have to worry about."
+36512276,trust-store-unmaintainable,https://news.ycombinator.com/item?id=36512276,"I've been working on a different approach to try to make it as easy as possible to use certificates from public CAs for private networks. I think it's really hard to get all your trust stores updated with private CA certs; there's just too many of them. I've encountered devices that weren't properly configured at every company I've worked at. Any time you've got a BYOD policy, a variety of mobile devices, or engineers are spinning up their own VMs (which don't copy the trust store of the host) you're going to see certificate warning messages. Back when every computer ran Windows and was chained to the desk it was easier for IT departments to update trust stores, but the world has changed and it's a losing battle.
+
+I think the better approach is to just use certificates from public CAs on private networks. There's some big issues to address: how does the public CA verify internal servers which don't permit external connections, is leaking internal subdomain names a security issue? But I think these are solvable.
+
+getlocalcert.net[1] is my project to simplify the process. Currently you can register a subdomain and use the ACME DNS-01 protocol via my site to issue certificates from from providers like Let's Encrypt. All you need to issue a certificate is a getlocalcert API key and the ability to connect out-bound to the Let's Encrypt API and the getlocalcert API. It supports a couple ACME clients and it should support cert-manager, mentioned in the article, but I haven't had a chance to test and properly document it[2]. I'm not doing anything that other subdomain registrars or DNS providers can't do, but I'm trying to address the public-CA-on-private-server niche as best as possible. Longer term I'm looking to add bring-your-own-domain support and other improvements.
+
+[1] https://www.getlocalcert.net/
+
+[2] https://docs.getlocalcert.net/acme-clients/cert-manager/"
+36513476,workaround-becomes-standard,https://news.ycombinator.com/item?id=36513476,"A reverse proxy is another good way to handle those. The proxy trusts the self-signed certificate and itself has a valid certificate from a CA the clients trust (either public or private). This way setup on the integrator's product is easy and client's aren't exposed to ""hard to verify"" certificates."
+37321957,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=37321957,"1. I have for some time been working on a browser-based app which is a management console for Amazon Redshift.
+
+2. It is not cloud based - you run it locally, no network access, no superuser, and no privs to read your actual tables; the design is intended to make it viable to use with the most sensitive of data.
+
+3. While the Russo-Ukraine war continues, all income barring business costs goes to the Ukrainian military.
+
+The home page for Combobulator is here;
+
+https://www.redshiftresearchproject.org/combobulator/index.html
+
+The live demonstration system is here;
+
+https://34.200.189.75
+
+Combobulator uses HTTPS, but where there is no IP name, a self-signed SSL certificate has to be used; you’ll need to click through the warnings from the browser."
+38039425,workaround-becomes-standard,https://news.ycombinator.com/item?id=38039425,"I had to generate bunch of these at work, because reasons, and I found out that you can use Caddy to do this by including `tls internal` in your Caddyfile.
+
+The first time you install it, it will prompt you to install the root cert."
+39737209,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=39737209,"If you're developing locally and need to use HTTPS for whatever, then this tool is hopefully useful to you.
+
+I made it because there's a lot of bad info online about generating self-signed certificates. For instance, a lot of guides don't use the SAN list extension or show you how to create a proper certificate chain. Firefox doesn't allow a CA certificate to be used as an end certificate. Getting a working certificate can get pretty confusing, especially for newcomers to certificates or webdev.
+
+Having a website for this also means the process of getting a certificate is the same, no matter if you're on a Unix-like OS or Windows.
+
+A WebAssembly module built with C++ and Mbed TLS is used to create the keys and certificates. TypeScript and Preact is used for the UI."
+39748034,workaround-becomes-standard,https://news.ycombinator.com/item?id=39748034,"> Getting a working certificate can get pretty confusing, especially for newcomers to certificates or webdev.
+
+mkcert does this really easily, one command and the CA is trusted in the system store, firefox, etc. and also has info on how to get it working with other stuff (e.g. mobile devices or node.js)
+
+I'd say for someone who doesn't know certs, your site does not really make it easier, it's overwhelming, tons of options that people probably won't know what they mean."
+40088421,vendor-undermines-trust,https://news.ycombinator.com/item?id=40088421,"ESET started scanning SSL certificate chains for nodejs, which is a good feature. If you're using node without a full chain then it will block the requests. Unfortunately, they did so without warning, which broke our GitHub Actions Runner and our dev machines.
+
+ESET deployed the change silently, breaking nodejs implementations and leaving people scrabbling around trying to add node to the SSL scan exception list.
+
+Is it reasonable to expect some warning before a change like this?
+
+I might be forced to choose a replacement. What's your goto brand of antivirus/botnet detection for server and workstation with centralised cloud management?"
+41436340,habituation-by-design,https://news.ycombinator.com/item?id=41436340,"By default (in the absence of a CA-signed server certificate), RDP connections between Windows PCs rely on a trust-on-first-use (TOFU) model, where the client software displays a warning [1] before sending credentials to a server whose certificate is not pinned to the registry [2].
+
+(This is somewhat similar to SSH with password, although the auto-generated self-signed RDP server certificates are only valid for 6 months for some reason, so users eventually learn to just ignore these warnings.)
+
+Microsoft's RDP client for iOS used to work like the Windows client in this respect [3], but over the last few years I have noticed that while the Windows client kept periodically prompting me to acknowledge new self-signed certificates, the iOS client stopped doing so.
+
+Recently, I manually generated self-signed 10-year certificates for my personal laptops in an attempt to fix the TOFU model. Sure enough, while the Windows client warned me about these unfamiliar certificates, the iOS client just kept connecting. Neither reinstalling the app nor using a FQDN to connect had any effect.
+
+I tried contacting MSRC [4], but they just responded with boilerplate (""closed as a non-MSRC case"" etc.). Could someone who works for MS tell if the app's silence on iOS is a bug or a feature? (And if it's a feature, why can't it be turned off?)
+
+[1] https://i.sstatic.net/pu5YX.png
+
+[2] HKCU\SOFTWARE\Microsoft\Terminal Server Client\Servers\...\CertHash
+
+[2] https://nextpointhost.com/images/knowledgebase/how_to_access_forex_vps_via_rdc_using_iphone_or_ipad_6.PNG
+
+[3] https://msrc.microsoft.com/report/vulnerability/auth/"
+41480034,sanctioned-mitm,https://news.ycombinator.com/item?id=41480034,"My school has a bring-your-own-device wifi which obviously necessitates blocking of certain categories of websites. Previously I used to be able to bypass their DNS blocking using DoH, but now this does not work anymore. Instead, trying to access a blocked website gets me a wrong/unsafe certificate warning followed by a Fortinet/Fortiguard blockpage when I click continue. Upon inspection I can see that the certificate is issued by Fortinet, which explains the warning. On non-blocked websites I do not get a warning and the certificate appears correct.
+
+How does this work? Is this some kind of MITM-Attack on me (I do not remember having had to install any special certificates, but I do not know how to check this)? Is there a convenient way to bypass this (i. e. not Tor et al.)?
+
+I respect the IT companys efforts to secure the schools network (The IT company is universally hated by the entire school - They block the sites the teachers want to use, the youtube videos sometimes used for lessons, make the schools computers slow through McAfee and other bloat and prevent us learning about computer networks in class by blocking school-pc-to-school-pc connections in the firewall. Oh, and they also recently took in all the school issued I-Pads for an update only to delete all personal files on them; fortunately I do not use these out of principle, although I believe everyone managed to recover from cloud backups), but I would like to understand what they are doing to the network.
+Furthermore I am concerned about the legality of what they are doing (German law) and if they are able to read my private data that flows through the network (the network is personal login only, which would make that even worse).
+Also I find it disconcerting that my school blocks hrw.org (i. e. human rights watch) which I believe sends a wrong message.
+
+If there is any testing I can/need to do for further analysis I would appreciate you telling me.
+Thank you! This is actually my first post here on HN as a long time lurker."
+41481910,sanctioned-mitm,https://news.ycombinator.com/item?id=41481910,"If you are getting a certificate warning then the dns lookup is succeeding but the (tcp) packets are under inspection (decrypted by the firewall and then re-encrypted). DoH only encrypts the DNS name resolution, which is only one method used by orgs to inspect traffic.
+
+To solve this you need a VPN so that the packets are encrypted by something in addition to TLS"
+41482009,informed-acceptance,https://news.ycombinator.com/item?id=41482009,"They are very likely keeping track of blocked domains'/DoH servers' IP addresses and have a routing rule that routes packets to those websites to somewhere else, very likely something like ""this site is blocked"" kind of informational webpage on their servers, but since this is HTTPS the certificates don't match (since the IP department doesn't have the private key of the actual website's certificate) so you get a certificate warning.
+
+I wouldn't accept that certificate, and if you have already done so, I'd remove it immediately from my device's certificate store."
+41482145,sanctioned-mitm,https://news.ycombinator.com/item?id=41482145,"Wrong / unsafe cert warning means you haven't installed their certs. They're trying to mitm you, but your browser is protecting you.
+
+It's almost certainly SNI, it's the plaintext hostname. Servers rely on it being present to route, so the only way around it is to tunnel through the firewall with a vpn"
+41482312,sanctioned-mitm,https://news.ycombinator.com/item?id=41482312,"TLS (websites) on your personal device is not being MITM by the Fortigate. TLS on your school's devices are.
+
+The page you're not seeing with the certificate error is just the ""This site is blocked by FortiGuard"" page. You're not seeing it because you don't have their cert installed in your device (which is good, don't install it). If you visit a blocked site on a school device, you'll see the page.
+
+Sorry, I don't know how the Forti's block DoH.
+
+To everyone recommending VPNs, SSH, etc: the Fortigate does application control and is going to catch like 99% of those shenanigans.
+
+Side note: Bypassing the network guardrails setup by a school or workplace is usually against their usage agreement. Even if you're not bypassing for nefarious reasons, it's probably not worth the potential consequences of getting caught."
+41482609,sanctioned-mitm,https://news.ycombinator.com/item?id=41482609,"> Instead, trying to access a blocked website gets me a wrong/unsafe certificate warning followed by a Fortinet/Fortiguard blockpage when I click continue.
+
+This is likely the Fortigate SSL/TLS deep inspection (<https://docs.fortinet.com/document/fortigate/7.6.0/best-prac...>). In short: The Fortigate conducts an organizationally sanctioned MITM attack on your web browsing. You would not get any warning if the public key of the certification authority on the Fortigate had been installed on your client. In corporate Windows environments this is usually done via group policies.
+
+Some websites may appear not to be subjected to deep inspection if those websites were exempt from SSL/TLS deep inspection. They'd be using SNI or the CN / SAN contents of the certificate presented by the website to make a policy decision against an allow or deny list of sites.
+
+Another possible scenario would be that you have the MITM CA installed but the block page your browser gets redirected to by the Fortigate was signed by another CA / self signed. But that would certainly be a misconfiguration on the Fortigate.
+
+Anyway. Your web browser allows you to inspect the certificate and more crucially the certificate chain used to verify the validity of a certificate. Look at the root certificate when you suspect a connection to be inspected. If the name of the root CA isn't already giving it away, you should be able to verify that it is a benign public CA by googling for it.
+
+Given the rest of your experience, I'm guessing the IT staff wants to increase control over what applications and sites can be used over the school network. It is rather easy to detect and block DoH and other possible filter evasions when you can decrypt all communication.
+
+> Also I find it disconcerting that my school blocks hrw.org (i. e. human rights watch) which I believe sends a wrong message.
+
+You can check how a site is categorized by the Fortigate here: https://www.fortiguard.com/webfilter
+
+Currently https://www.hrw.org/ is categorized as ""Advocacy Organizations"" in the group ""Adult / Mature Content"". I'm going to guess the whole ""Adult / Mature Content"" group has been blocked and you found a striking example of over blocking.
+
+Now... what can you do about it? The easiest and least troublesome solution would be to just ignore the nosy IT infrastructure and use the school computers and their network just for the work assigned to you. I'm guessing you have unfiltered access to the Internet off campus anyway. Or you could tether you device to your mobile phone and bypass all filtering that way.
+
+Subverting the school's attempts to limit your access is certainly a possibility given sufficient tenacity to learn and a certain kind of creativity with a tendency to cause mischief. But I'll leave it to you to figure out the details. When your actions get you into trouble: You have asked for it. Act accordingly."
+43084783,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=43084783,"I previously used openssl-based scripts to generate certificates to use for local development or applications on a private network. I have since moved to using the step CLI [1].
+
+OpenSSL is powerful, but it's hard to figure out how to use correctly. Each command seems cryptic no matter how many times I use it.
+
+The step CLI is a lot simpler, even though it has a few quirks: generating PKCS1 formatted private keys instead of the newer PKCS7 format, making every leaf certificate eligible to be either a server certificate or a client certificate, and absurdly low default certificate expirations.
+
+1: https://github.com/smallstep/cli"
+43085175,removing-the-warning-is-the-goal,https://news.ycombinator.com/item?id=43085175,"https://github.com/caddyserver/caddy/issues/5759 :
+
+> When generating a CA cert via caddy and putting that in the trust store, those private keys can also forge certificates for any other domain.
+
+RFC5280 (2008) ""Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"" > Section 4.2.1.10 Name Constraints: 
+https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.... :
+
+> The name constraints extension, which MUST be used only in a CA certificate, indicates a name space within which all subject names in subsequent certificates in a certification path MUST be located. Restrictions apply to the subject distinguished name and apply to subject alternative names. Restrictions apply only when the specified name form is present. If no name of the type is in the certificate, the certificate is acceptable.
+
+> Name constraints are not applied to self-issued certificates (unless the certificate is the final certificate in the path). (This could prevent CAs that use name constraints from employing self-issued certificates to implement key rollover.)"
+43086072,informed-acceptance,https://news.ycombinator.com/item?id=43086072,"Some of us are aware of the risks and choose to accept them. Last week I tried to analyze HTTPS traffic on my Linux machine using MITM to check what some programs were sending back home, but omg, it was a pain, I also partially failed. Some apps just ignore system certs and use their own. Tools like mitmproxy help (docs are lacking btw). I paid for both the devices and the software, shouldn't I be able to take a peek at what they are doing?"
+43088786,removing-the-warning-is-the-goal,https://news.ycombinator.com/item?id=43088786,"If this is now finally supported that's great. The issue was that for it to be useful it has to be marked critical / fail-closed, because a CA with ignored name constraint == an unrestricted CA. But if you make it critical, then clients who don't understand it will just fail. You can see how this doesn't help adoption."
+44031404,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=44031404,"Hey HN,
+
+I built a dev env called ServBay. Like many of you, I've spent countless hours wrestling with local development setups. Juggling different project requirements, language versions, SSL certs, database conflicts, and just keeping everything consistent across projects often felt like a constant, frustrating battle. I wanted something more streamlined and integrated.
+
+We all know the drill: one project needs PHP 7.4, another PHP 8.2. Then there's that legacy Python 2.7 app alongside a new Python 3.10 service. Node.js versions seem to change daily. Managing databases, getting HTTPS to work locally without browser warnings, and testing email notifications without cluttering an actual inbox... it all adds up to a lot of friction.
+
+That's why I decided to build ServBay – an attempt to simplify and streamline this entire process on macOS. My goal was to create a tool that gets out of your way and lets you focus on coding.
+
+Here are some of ServBay's core features I think you might find useful:
+
+- One-click Version Switching (Seriously!):
+ - PHP: Switch between 5.6 all the way up to 8.5 (and beyond as new versions release).
+ - Node.js: Easily manage versions from 12 to 23.
+ - Python: Support for legacy Python 2.7 projects, as well as modern 3.5 up to 3.24.
+ - Java: OpenJDK 7 through 24, with built-in Maven for smoother Java project management.
+ - Go, .Net (including ASP.NET 4.x), Ruby, Rust: We're aiming to support a broad range of languages you might need.
+ - Databases: Not just the languages, but also your databases! Switchable versions for MySQL, MariaDB, PostgreSQL, and MongoDB. Spin up the right database version for your project without conflicts.
+
+- Hassle-Free SSL & Custom Domains:
+ - Getting HTTPS working locally can be a real pain. ServBay includes built-in SSL certificate management (PKI based) so you can develop with https:// effortlessly for all your local projects, without those annoying browser warnings.
+ - Easily map custom domains (e.g., my-project.local instead of localhost:8080/my-project) for a cleaner and more production-like setup.
+
+- Integrated Mail Testing:
+ - ServBay comes with Mailpit integrated out of the box. Test email sending functionality from your local applications without spamming actual inboxes. All emails sent by your local apps are captured and viewable, making debugging a breeze.
+
+- Comprehensive Backup & Restore:
+ - We've all been there – a bad config change, a corrupted database. ServBay offers peace of mind with comprehensive manual and automatic backups. This includes your website files, databases, SSL certificates, and even ServBay's own configuration.
+
+Platform & Future:
+
+Currently, ServBay is available for macOS.
+We know a huge number of developers are on Windows, and I'm happy to say that a Windows version is under active development! If you're a Windows user interested in a better local dev experience, please join our waitlist here: https://www.servbay.com/join-windows-waiting-list
+
+Feedback:
+I'd be incredibly grateful if you'd give ServBay a try. You can download it and learn more here:
+https://www.servbay.com
+
+This is very much an early release, and your honest feedback is crucial for its development. What do you like? What's missing? What's broken or clunky? Are there any features you'd love to see? Any suggestions, criticisms, or bug reports are incredibly welcome!
+
+Please leave your thoughts and feedback in the comments below. I'll be here to answer any questions.
+
+Thanks so much for your time and for checking out ServBay. I'm really excited (and a bit nervous!) to hear what you think."
+44135480,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=44135480,"Hey HN,
+Like many of you, I've spent countless hours wrestling with local development setups on macOS. Juggling different PHP or Node.js versions for various projects, manually generating SSL certs (and still getting browser warnings!), or figuring out how to reliably test email sends locally – it all felt like too much friction.
+That's why I built ServBay. It's my solution to streamline this whole process.
+ServBay is a native macOS application with a GUI designed to bundle and manage all the essential services you need for local web development. This includes web servers (Nginx, Caddy, Apache), databases (MySQL, PostgreSQL, MariaDB, MongoDB), languages (PHP, Python, Java, .NET, Node.js, Ruby, Rust), LLM (Ollama), and other handy tools like Redis and Memcached, all in one place.
+Here's how ServBay aims to make your life easier:
+- One-Click Simplicity: Spin up and manage multiple services and their versions (e.g., PHP 5.6 through 8.3+, Node.js LTS versions, Python2.7/3.5 - 3.14) with just a few clicks. No more complex command-line juggling for common tasks.
+- Automatic SSL: Get automatic SSL certificates for your local domains (e.g., project.dev, app.local, or even your real domain mapped locally). Say goodbye to manual mkcert rituals and browser security warnings.
+- Integrated Mailpit: Test email functionality effortlessly. ServBay includes Mailpit, which captures all outgoing mail locally for easy inspection and debugging, no external SMTP needed.
+- Flexible Domain Management: Easily set up custom local domains for your projects. ServBay handles the host file modifications for you.
+- True Multi-Version Support: Run different versions of PHP or Node.js side-by-side and assign specific versions to individual sites/projects .
+- One-Click Backup & Restore: Quickly back up your crucial configurations and databases, and restore them just as easily.
+- Comprehensive Service Stack: Includes Nginx (Apache support planned), PHP (many versions), Node.js, MySQL, MariaDB, PostgreSQL, Redis, Memcached, and we're always looking to add more based on demand.
+ServBay aims to be simpler than manually configuring everything with Homebrew or managing complex Docker setups for common web development stacks on macOS, while being significantly more feature-rich, flexible, and macOS-native than traditional MAMP/XAMPP.
+You can check it out and download it from: 
+https://www.servbay.com
+https://github.com/ServBay/ServBay
+ServBay is a commercial product, but there's a free trial available so you can see if it fits your workflow.
+I've poured a lot of effort into making ServBay genuinely useful, and I'd be thrilled to hear your thoughts, feedback, and any feature requests. How does this compare to your current macOS dev setup? What are your biggest pain points that something like ServBay could solve?
+Thanks for checking it out!"
+44143995,workaround-becomes-standard,https://news.ycombinator.com/item?id=44143995,"At work we have a few hundred internal self-signed certs we maintain, and I had a shower thought the other day about a light-weight certificate issuer targeted specifically towards self-signed certs in a largely trusted environment.
+
+LessEncrypt uses the reverse DNS of the connecting host to control the Common Name and SANs on the cert (multiple SANs can be allocated based on some mapping rules). A connection back to the host for delivery of the cert helps establish a level of trust that the cert is reaching the intended authority.
+
+I'm deploying this in my dev environment and looking for wider review and feedback on it."
+44298562,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=44298562,"Author here.
+
+Website: https://www.servbay.com
+Github: https://github.com/ServBay/ServBay
+Windows: https://github.com/ServBay/ServBay-Windows-Release
+
+For years, I've wrestled with a persistent problem: reliably exposing local services to the public internet. We've all paid the ""DIY tax"" for this: fighting with NAT/CGNAT, configuring DDNS for a dynamic IP, and dealing with NET::ERR_CERT_INVALID warnings from self-signed certs, all just to test a Stripe webhook or show a demo.
+
+Problem & Context
+
+The core issue isn't a lack of tools, but their severe fragmentation. Each tool solves part of the problem but adds its own complexity:
+
+Ngrok: The free tier's rotating URLs & rate limits break continuous testing. Advanced modes require digging into complex YAML.
+
+frp: Powerful, but self-hosting frps is a project in itself (VPS, firewalls, daemons, SSL).
+
+Cloudflared: Robust, but the setup is cumbersome, requiring Cloudflare auth, DNS management, and a steep learning curve.
+
+This fragmentation means constant context switching and high cognitive overhead. We become part-time network admins instead of writing code.
+
+Solution & Methodology
+
+I built ServBay, a GUI app for macOS and Windows, to unify this chaos. It's not just a command-line wrapper, but a deep abstraction layer for these disparate protocols.
+
+Unified Control Plane: ServBay provides a GUI to start, stop, and configure tunnels with a few clicks. It handles config parsing (YAML, TOML, CLI-args), process lifecycle (start, watch, graceful shutdown), and parses stdout/stderr to display status and public URLs.
+Intelligent frpc Client: For full control, we integrated frp. You still self-host frps, but ServBay acts as an intelligent client. Just fill in your server details in the GUI, and it manages the local frpc.toml for you.
+
+Built-in PKI & Local HTTPS: To kill the local SSL headache, we built a PKI system. ServBay can generate a local Root CA and, with one click, install it into the system trust store (it handles the necessary privilege escalation). You can then issue browser-trusted SSL certs for any local project (e.g., my-app.dev). This is crucial for APIs requiring a Secure Context (like WebAuthn, Secure Cookies).
+
+Trade-offs
+
+Our main trade-off is Flexibility vs. Convenience. ServBay covers the 95% use case. If a tool releases a bleeding-edge feature, you'll get it faster via the native CLI than through our UI. We bet that for most developers, the productivity gain from avoiding config hell is worth that trade-off.
+
+Results & Learnings
+
+The biggest result is drastically reduced friction. What took minutes or hours of config & debugging now takes seconds.
+
+A key technical lesson: cross-platform system-level interaction is hard. Reliably managing child processes, handling network configs, and securely modifying the OS certificate trust store is far more complex than it sounds. For instance, avoiding zombie processes on app exit required a deep understanding of each OS's process model and a lot of defensive programming.
+
+If you've ever felt this pain, I built ServBay for us. The macOS version is out, and a Windows version is currently in beta. I'd love for you to give it a try. We're iterating quickly, and any feedback, especially from the HN community, would be invaluable.
+
+I'm happy to discuss anything in the comments, from local dev environments and network tunneling tech to cross-platform GUI development.
+
+Website: https://www.servbay.com
+Github: https://github.com/ServBay/ServBay
+Windows: https://github.com/ServBay/ServBay-Windows-Release"
+44932434,control-teaches-opposite,https://news.ycombinator.com/item?id=44932434,"Our results suggest that these efforts offer limited value.
+
+First, we find no significant relationship between whether users have recently completed cybersecurity awareness training and their likelihood of failing a phishing simulation.
+
+Second, when evaluating recipients of embedded phishing training, we find that the absolute difference in failure rates between trained and untrained users is extremely low across a variety of training content.
+
+Third, we observe that most users spend minimal time interacting with embedded phishing training material in-the-wild; and that for specific types of training content, users who receive and complete more instances of the training can have an increased likelihood of failing subsequent phishing simulations.
+
+Taken together, our results suggest that anti-phishing training programs, in their current and commonly deployed forms, are unlikely to offer significant practical value in reducing phishing risks.
+
+I've long been of the view that most of the ""phishing training"" that gets sold to companies is largely snake oil with very little benefit, and is essentially a compliance-driven waste of money. It's nice to see a study supporting this view."
+44941422,control-teaches-opposite,https://news.ycombinator.com/item?id=44941422,"The phishing training in my workplace is so odious, and the consequences for failing a test are high enough, that it's led to everyone just ignoring all unexpected communications. Better to ignore it all than to risk making a mistake. Even emails from known coworkers (the phish test often spoofs as your coworkers) tend to be ignored until the coworker confirms they sent it.
+
+This is great for security (the most secure communication is communication that doesn't happen), but now the suits are wondering why it is that nobody is reading or responding to company emails anymore."
+45530790,control-teaches-opposite,https://news.ycombinator.com/item?id=45530790,"I had an exec at a tech company once send out an email with the subject line ""Important."" All there was, was an attached .docx file, and a sentence saying to read it immediately. This guy should have been fired for this level of incompetence. No, it wasn't a phishing test.
+
+Then Microsoft sends out e-mail advertisements with fucking QR codes in them to everybody to get people to install software without IT department's knowledge. So you not only can't see the link, you can't even de-obfuscate it by hovering over it.
+
+There's a really easy fix for this. It's so fucking easy it hurts my brain.
+
+Disable HTML e-mails. Disable hyperlinks. Feel free to send URLs, but make people copy and paste the link. This way they have to at least select the link. When they get a 6000 character link and can't copy paste it? That's good! Because they have no idea what the link actually is.
+
+Nobody will do it, and I don't get why not. Do you really need to market to your internal employees so badly with images and links? That's what a portal is for. Post updates on your portal and stop bombarding my goddamn email box."
+45530826,control-teaches-opposite,https://news.ycombinator.com/item?id=45530826,The fact that your employer might direct you to a URL that doesn't look like their normal domain (or through some kinda link shortener so you can't see it without clicking) for legitimate reasons basically undoes all security yeah. Why can't security teams focus on correcting those parts?
+45530891,control-teaches-opposite,https://news.ycombinator.com/item?id=45530891,"Seems like they counted it as a failure if the user just clicked the link in the email. But what are the supposed to do? Never click links in emails? Only click links to some white-list of domains they hold in their head? I would think clicking a link is fine, but entering credentials is not.
+
+It's no surprise people didn't engage with training material on the pretend phishing site!! At that stage, they're told it was a trap and they shouldn't even be there so of course they're going to get out asap."
+45531134,control-as-liability-transfer,https://news.ycombinator.com/item?id=45531134,"> - Part of the problem is just that a normal workflow is: receive email --> click on URL --> enter credentials into 3rd party website. ie, this is intentional and valid behavior for most white collar workers on a daily basis. 
+
+Here's a crazy history of that happening...
+
+I had a friend who was an employee of a Fortune 100 corporation. Part of employee training was not to click on links in emails. In the 1990s and the rise of the internet, they had an internal security ""red team"" periodically send a fake phishing emails to employees. If the employee mistakenly clicked on a link in that email, the red team would send a notice to the employee's manager. It worked well because employees would not want to be embarrassed by a manager having to review the security policy with them to get their access back.
+
+When she retired, all that training became useless and she was phished by a fake AT&T email. Why? Because with the rise of smartphones, every _legitimate_ company started sending emails that had useful tappable links. With the touchscreen, you can't hover your finger over the link to see what the underlying url is. People just normalize pressing on links in transactional emails as a convenient thing to do. E.g. Amazon sends an email with a link to the order status. A legit bank will send an email with a link for ""Please review your security setting.""
+
+Smartphones reversed 15 years of not clicking on email links."
+45531329,control-teaches-opposite,https://news.ycombinator.com/item?id=45531329,"The reason might be that the training programs are just ridiculously bad. I clicked on a pretend phishing link out of interest to see what happens. I was treated to a lecture of how clicking on links in emails is always bad and to never do it.
+
+That advise would be fine (albeit maybe extreme) if it wasn't the case that for the last year I have been spammed by emails from said training company telling me to click on the included link to complete the next cybersecurity course. Even worse they use some nondescriptive weirdly named domain not their own to host the training courses. So if anything the courses are training people to click on phishing emails."
+45531438,org-friction-as-cause,https://news.ycombinator.com/item?id=45531438,"Re: the receive email -> click URL -> enter credentials.
+
+We need SSO to stop being gated behind enterprise tiers. SSO tax is real, and can help solve this problem. I've moaned about this before as the leader of an IT team for a medium-sized company reliant on a lot of SaaS.
+
+Enterprise plans are too much (both in terms of cost and features) for us, but we are smart enough to have security requirements and one of those is SSO & SCIM. Very few SaaS offers that on anything but the most expensive ""call for quote"" tiers. That's a huge problem.
+
+That whole email invite->click link->enter credentials workflow is gone with proper SCIM provisioning and SSO. It's the bare minimum a SaaS product should offer and should be on the lowest available tier.
+
+The other problem are services like DocuSign, which offer free trials that are abused to send out fake documents. User gets a legitimate email from DocuSign's domain, clicks on it, opens up a real document in the real DocuSign site, but the doc has a link to the phishing site.
+
+All DocuSign needs to do is require a CC for the trial or contacting sales for a trial, problem solved. But they don't, so as far as I'm concerned they are complicit in enabling phishing."
+45531623,control-as-liability-transfer,https://news.ycombinator.com/item?id=45531623,"I recently got reported for clicking a phishing link three times. Looking at the audit log all three of these clicks supposedly happened within seconds of each other.
+
+My suspicion is the training company realized no one was falling for the obvious bait anymore and they needed to gin up the numbers to keep the company convinced that paying for their services was worthwhile.
+
+Meanwhile all corporate teams use the same VLAN and DHCP Address Pool. There is zero separation of departments on the network. A lot of companies get this precise situation backwards as we have."
+45532469,control-teaches-opposite,https://news.ycombinator.com/item?id=45532469,"No, it's not. Phishing isn't a social problem, it's a technological problem. Whether or not you can intercept my credentials shouldn't be a question of how much I trust my IT department or how well I'm trained; the credentials simply shouldn't allow that to happen. That's the entire reason U2F was invented, and then WebAuthn and FIDO2."
+45532515,control-teaches-opposite,https://news.ycombinator.com/item?id=45532515,"The first company I worked for as a developer was like this, except worse.
+
+We got hit with some Christmas virus. One of the devs was talking about how he had mistakenly clicked on the link, but nothing happened. We were at lunch and suddenly were all looking at each other like, ""Dave, this isn't good!"" told him to call support because we had all seen the emails from security to not click on any links in emails because so many of these were making the rounds.
+
+They took his laptop, reimaged it and gave back to him. The funny part was the Outlook team disabled any links in any emails he got from then on. Not sure how they did it, but if you wanted to send him a link, you had to send it to his personal email or over one of his social media accounts. Any time he got a link, if it was for business, he would have to call support, open a ticket and then an hour later, they would send him the link to open.
+
+It drove the guys nuts. He asked repeatedly to have them enable the links, but they basically told him once you were on the list, it was for good. He quit after four months and said one of the most infuriating things was security never allowing him to get off of the ""naughty"" list."
+45532736,control-teaches-opposite,https://news.ycombinator.com/item?id=45532736,"Corporate practices are the primary form of cybersecurity training. I have seen too many corporations (including critical infrastructure corps) that force employees to login to foreign domains with corporate credentials. This includes email services, two factor authentication, team chat, LMS, dashboards, surveys, web meetings, code forges, ticket tracking, VPN, etc.
+
+Corporations outsource almost every single tool used by their employees and train them to cough up their corporate credentials no matter what url the browser identifies. In essence, they phish their employees 100 times a day. Then they force employees to sit through training twice a year to identify phishing attacks. Every legitimate training will create cognitive dissonance with employees' every day work experiences."
+45532875,control-as-liability-transfer,https://news.ycombinator.com/item?id=45532875,"The point of these trainings is to satisfy compliance requirements and to deflect responsibility when someone inevitably fucks up. All HR mandated training courses are to protect the company, by allowing them to blame the employee when something goes wrong. It's not our fault, we told them not to, here's the proof."
+45532990,control-as-liability-transfer,https://news.ycombinator.com/item?id=45532990,"Why is clicking the link a failure? I thought this was the point of keeping my browser up to date, so I can trust the sandbox!
+
+A couple of times, I got emails that seemed suspicious, but I figured I would click the link to investigate further. I was on high alert and would not have entered login credentials or opened an executable or anything like that, I just wanted to check it out and see.
+
+Of course, it was a phishing audit and I failed. WTF?"
+45533836,habituation-by-design,https://news.ycombinator.com/item?id=45533836,"Yes although this runs the risk of what you commonly see at daycares and schools.
+
+There'll be a sign that says ""Peanut free zone"" and everyone will read it and respect it.
+
+Then there'll be a sign that says ""Please be sure to pick your kid up by x o'clock."" And everyone will read it and respect it and silently stop looking at it cause they know.
+
+And then there will be a sign that says ""Please keep your child at home if you suspect they might be sick."" And everyone will read it and be a little offended because why would they do that knowingly?
+
+After a while the entrance will be plastered with notices and warnings that get put up and not taken down. And nobody reads them because they probably already know and it's not worth spending 20 minutes reading the entire wall.
+
+I get the external/partner emails. And a notice that outlook removed extra line breaks from the message (whew). And a notice that if there are problems reading the email I can view it in a web browser. And a helpful suggestion that Copilot can give me the tldr.
+
+Outlook is beginning to feel like daycare."
+45534624,org-friction-as-cause,https://news.ycombinator.com/item?id=45534624,"I have created an internal tool for my company. They are plugins that are installed in the browsers for the computers owned by the business, and reports the domain when you open a new browser or tab with a url that you did not manually typed. If blacklisted, it completely blocks the browser. If it is the first time we see the domain, we display a pop up “think before you act” and the it department will dive deep to whitelist it.
+
+The first week there is a bit of noise while we whitelisted the common domains used by the users. After that it really puts you back on alert when you clicked on a email that takes you to new domains - that could be used for phishing."
+45534755,control-teaches-opposite,https://news.ycombinator.com/item?id=45534755,"My university routinely sends notifications about required annual phishing training that violate almost every point in the training about how to avoid getting phished. Its been happening for years. Urgency. Appeals to authority. Grammatical errors. Mystery click-me links that go outside the domain to training service providers that we do not use in any other context. References to alternative ways to get to the training that don't work.
+
+I've reported it multiple times over the last few years but our IT security team blows off the concern, insists that I follow the link, and changes nothing. And no, it isn't just them testing people to see if they will fall for it. I am also in a position to see the tracking reports and be in meetings where expectations are discussed.
+
+Our program is explicitly training people to get phished."
+45539888,control-teaches-opposite,https://news.ycombinator.com/item?id=45539888,"At the very least it would stop the link manipulation that some email systems do (looking at you Exchange Online w/ ""Link Protection"") so now you get to see that it's some phishing site going to g00gle.co instead of Exchange's ""protection.officelinks.com/asfgqwerty12345...."" and so on for 150 characters."
+45620711,control-teaches-opposite,https://news.ycombinator.com/item?id=45620711,"How can clicking a link get you hacked? 20 years ago with insecure browsers, yes, but how does that happen today? homograph doesn't matter if you don't even look at the domain name.
+
+If those employees are supposed to do you recommendation and never click links in emails, why don't their employers strip URLs from emails for them? Some of them are a already inserting warning messages for external emails. I think they're supposed to do the white-list-in-head thing which seems awful."
+45643144,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=45643144,"Hey HN,
+
+For years, my local development setup has been a fragile mess of tools that never quite played nicely together. On my mac, it was a constant battle with Homebrew services starting (or not starting) on boot, conflicting PHP and Node versions managed by `asdf` or `nvm`, and a collection of `docker-compose.yml` files that I'd copy-paste and tweak for every single project. The cognitive load was just too high.
+
+Setting up SSL was another chore involving `mkcert`. Sharing a quick demo with a colleague meant firing up ngrok. And if I wanted to run two projects that needed different versions of PostgreSQL? Good luck. I’d have to stop one service to start another.
+
+I missed the simplicity of the MAMP/XAMPP era, but I needed something that could handle the diverse stack of a modern developer – not just PHP and MySQL, but Python, Go, Rust, Node.js, and various databases.
+
+That’s why I (along with my small team) built ServBay. It's our attempt to bring back simplicity and speed to local development without sacrificing power. It's a native app for macOS and Windows, not a wrapper around Docker or VMs.
+
+Here's what it does:
+
+One-Click Stacks: You can install and run multiple, isolated versions of languages like Python, Node.js, Go, Java, Rust, Ruby, and .NET. No more path conflicts or environment variable hell.
+
+Databases, Plural: This was a huge one for me. You can run multiple instances of MySQL, MariaDB, PostgreSQL, Redis, and MongoDB simultaneously. Project A can use Postgres 14 while Project B uses Postgres 16, both running at the same time on different ports.
+
+Automatic SSL: Any host you create gets a valid SSL certificate out of the box. No more browser privacy warnings for `.test` or `.localhost` domains.
+
+Built-in Tunneling: If you need to demo a feature or test a webhook, there's a one-click button to expose your local site to the internet via a secure tunnel.
+
+One-Click Local AI: This is something we're really excited about. We've added a feature to easily download and run models like Llama 3 or Stable Diffusion locally through a simple UI, so you can experiment without worrying about API keys or costs.
+
+Everything Else: It also handles one-click backups, has a clean, non-intrusive UI, and is designed to be as lightweight as possible.
+
+I know what many of you are thinking: ""Why not just use Docker?""
+
+And that's a fair question. We use Docker for production and complex, multi-service architectures. But for quickly spinning up a single-service app, testing a new framework, or just general day-to-day development, the overhead of `Dockerfile`s, `docker-compose.yml`, slow file sync on macOS, and resource consumption often feels like overkill. ServBay is for those moments where you just want to get to the code.
+
+The project is still young, and we have a long roadmap ahead. I'm here all day to answer any questions, listen to your (brutally honest) feedback, and hear about what your own development workflows look like.
+
+You can check it out here: https://www.servbay.com
+
+Thanks for reading."
+47457162,vendor-undermines-trust,https://news.ycombinator.com/item?id=47457162,"Just a PSA for folks here in the US because tax season is coming up and some of you may be using H&R Block Business 2025. I discovered that the software installs a root CA named ""WK ATX ServerHost 2024"" (expiry 2049) into your local machine trusted root certificate store. They also helpfully include the private key to this certificate in a DLL file. This certificate does not identify itself as ""H&R Block"" anywhere and does not get uninstalled when you uninstall the software.
+
+I've been able to successfully use this root CA + mitmproxy to manipulate TLS traffic on a brand new virtual machine on the same network with a DNS spoofing attack. Demo: https://www.youtube.com/watch?v=5paxvYkz1QE
+
+To test if your machine is vulnerable visit this page: https://hrbackdoor.yifanlu.com and if you do not get any warning or error message from your browser then you have the backdoor installed. If your browser does complain, you can choose to visit the page anyways for more details on the vulnerability.
+
+Is it negligence or a ""real"" back door? It's impossible to tell and since the private key is out there, anyone can use it so the point is moot. There is no legitimate reason why they need to install a wildcard root CA under a different name. When I contacted them about it their statement includes ""similar findings have been identified through internal security assessments"" meaning they know about this issue but have not fixed it. I would not trust H&R Block software at this point.
+
+If you didn't get bit by this, congratulations. See this post as a reminder to audit your trusted root CA store."
+47618945,trust-store-unmaintainable,https://news.ycombinator.com/item?id=47618945,"Nice rewrite. The SAN support is the right call, a lot of older generators trip on that.
+
+One thing worth knowing if you're using this for internal services: generating the cert is the easy part. Getting the CA cert into the trust stores of everything that needs to trust it is where self-signed deployments usually turn into a maintenance problem, especially across a mix of Linux servers, Windows machines, and Java apps with their own keystores."
+48117476,warning-cannot-be-satisfied,https://news.ycombinator.com/item?id=48117476,"Hi, HN!
+
+I recently published SelfCertForge, an open source desktop app for creating and managing self-signed certificates on macOS and Windows:
+
+https://github.com/rbonestell/SelfCertForge/
+
+I know, I know... this isn't an earth-shattering invention. This came from a place of years of personal annoyance. I’ve been maintaining scripts that wrapped OpenSSL for local certificate workflows: create a long-lived root cert, add it to the trust store, then generate and sign child certificates for local services.
+
+The scripts work but the workflow was clunky. Used infrequently enough that it's easy to forget the flags, not much easier to explain to anyone than OpenSSL itself, and irritating to repeat across machines. Every time I'd share them with colleagues and friends there were always questions and feature requests, so I used Claude Code to amplify my UI/UX design skills (well, I can't amplify 0...) and turned the functionality into a cross-platform GUI.
+
+SelfCertForge can generate root CAs and add them to the system's trust store, generate and sign child certificates, and export DER, PEM, PFX, and P7B formats. It also supports common X.509 fields like Subject, SANs, and Key Usage.
+
+Very important caveat: this is not suitable for production environments or public-facing SSL/TLS."
+48229314,control-teaches-opposite,https://news.ycombinator.com/item?id=48229314,"hey!
+our team developed this tool that allows security trainers and teams to develop their own anti-phihing-education trainings based on their own threats, apps, context and language.
+
+would love to get your feedback on it :)
+
+We are also aunching a free-program for 10 orgs on our Enterprise plan --> https://docs.google.com/forms/d/e/1FAIpQLSc5nl1K8IQWuvoR_6PH..."
+48562859,sanctioned-mitm,https://news.ycombinator.com/item?id=48562859,"Google just prompted me to select a certificate for
+lh3.googleusercontent.com:443
+
+I'm not alone in this, also happened to my friend, and also posted to Reddit:
+
+https://www.reddit.com/r/techsupport/comments/1u7h672/browser_asking_me_to_select_certificate_is_it_a/
+
+Seems like somebody definitely misconfigured something somewhere. The question is then was this the direct result of the misconfiguration, or someone abusing a misconfiguration. Client certificates can be used to identify people so this is a good way to mass collect certs. This data could also be used to analyse client certificates that are around."
+48563100,informed-acceptance,https://news.ycombinator.com/item?id=48563100,"Yeah I would definitely hit no. Should have collected network information while it happened.
+
+What was also interesting is that it prompted me to select a certificate that was definitely not for that page, ie. it accepted any and all certs, not just ones that are for a certain page (I have incus web generated certificates that should be only for that domain and page, which definitely have nothing to do with Google)."
+48574441,sanctioned-mitm,https://news.ycombinator.com/item?id=48574441,"From https://support.cloud.google.com/portal/system-status:
+
+Status:
+Fully Resolved
+
+Product group:
+Google Workspace
+
+Products affected:
+Admin Console, Chrome Browser, Endpoint Management
+
+Start time:
+Tuesday, June 16, 2026, 10:28:15 PM GMT-07:00
+
+End time:
+Tuesday, June 16, 2026, 10:28:24 PM GMT-07:00
+
+Description:
+A subset of users within the EU and Americas regions may have encountered a TLS certificate pop-up while using Workspace Apps.
+
+Steps to reproduce:
+Impacted users may have encountered a popup where ""lh3.googleusercontent.com"" is asking for a TLS certificate when using any Workspace Apps.
+
+This issue does not impact any critical functions on the corresponding Apps, as an option to bypass the prompt is available to users.
+
+Workaround:
+The issue is mitigated now.
+
+Updates:
+Tuesday, June 16, 2026, 5:31:51 PM GMT-07:00:
+
+We are investigating a potential issue with Chrome Browser.
+
+We will provide more information by Tuesday, 2026-06-16 18:00 PDT.
+
+Tuesday, June 16, 2026, 5:40:40 PM GMT-07:00:
+
+We are investigating the authentication prompt issue on Chrome browser beginning on Tuesday, 2026-06-16 05:30 PDT.
+
+Our engineering team continues to investigate the issue.
+
+We will provide an update by Tuesday, 2026-06-16 19:00 PDT with current details.
+
+We apologize to all who are affected by the disruption.
+
+Tuesday, June 16, 2026, 7:05:40 PM GMT-07:00:
+
+We are investigating the authentication prompt issue while using Workspace Apps beginning on Tuesday, 2026-06-16 05:30 PDT.
+
+Our engineering team has identified the root cause and mitigation is currently underway. We do not have ETA for mitigation at the moment.
+
+We will provide an update by Tuesday, 2026-06-16 20:30 PDT with current details.
+
+Tuesday, June 16, 2026, 8:16:33 PM GMT-07:00:
+
+We are investigating the authentication prompt issue while using Workspace Apps beginning on Tuesday, 2026-06-16 05:30 PDT.
+
+Our engineering team has identified the root cause and mitigation is currently underway. We do not have ETA for mitigation at the moment.
+
+We will provide an update by Wednesday, 2026-06-17 00:00 PDT with current details.
+
+Tuesday, June 16, 2026, 10:28:15 PM GMT-07:00:
+
+The issue with Workspace Apps has been resolved for all affected users within the EU and Americas regions as of Tuesday, 2026-06-16 19:41 PDT
+
+From a preliminary analysis, the issue was due to a configuration error that inadvertently requested client certificates. Our engineers have mitigated the issue by fully rolling back the affected configurations to a previous working state.
+
+We thank you for your patience while we worked on resolving the issue."
+49049796,designing-against-click-through,https://news.ycombinator.com/item?id=49049796,"Related to this thread [1] which Jabber clients not only detect MitM tampering when a valid cert is used in the middle but is not the cert on the server, meaning an entity obtained a certificate, used it to MitM the connection and the client not only rejects this alternate valid certificate but also alerts the user to the MitM. XEP-0474 SASL SCRAM Downgrade Protection (Experimental) [2] Claude does not seem to know and I can't find any clarifying documentation, just lots of open issues.
+
+The purpose is for writing an article on E2EE but I want to suggest clients that will alert on MitM tampering in a manor the person using the client can not accidentally ignore it. i.e. just click through a warning
+
+On the server side eJabberd and Prosody appear to be the only server daemons supporting XEP-0474 but I just can't find a definitive list of supported clients even if they are in the experimental phase. One may wish to experiment.
+
+[1] - https://news.ycombinator.com/item?id=37955264
+
+[2] - https://xmpp.org/extensions/xep-0474.html"
+49087187,designing-against-click-through,https://news.ycombinator.com/item?id=49087187,"Related to this thread [1] which Jabber clients not only detect MitM tampering when a valid cert is used in the middle but is not the cert on the server, meaning an entity obtained a certificate, used it to MitM the connection and the client not only rejects this alternate valid certificate but also alerts the user to the MitM. XEP-0474 SASL SCRAM Downgrade Protection (Experimental) [2] Claude does not seem to know and I can't find any clarifying documentation, just lots of open issues.
+
+The purpose is for writing an article on E2EE but I want to suggest clients that will alert on MitM tampering in a manor the person using the client can not accidentally ignore it. i.e. just click through a warning
+
+On the server side eJabberd and Prosody appear to be the only server daemons supporting XEP-0474 but I just can't find a definitive list of supported clients even if they are in the experimental phase.
+
+I am not interested in an LLM answer. LLM's do not appear to know the answer and instead give the official stance that XEP-0474 is experimental which holds no value for those wishing to experiment.
+
+[1] - https://news.ycombinator.com/item?id=37955264
+
+[2] - https://xmpp.org/extensions/xep-0474.html"
+49102863,designing-against-click-through,https://news.ycombinator.com/item?id=49102863,"Related to this thread [1] which Jabber clients not only detect MitM tampering when a valid cert is used in the middle but is not the cert on the server, meaning an entity obtained a certificate, used it to MitM the connection and the client not only rejects this alternate valid certificate but also alerts the user to the MitM. XEP-0474 SASL SCRAM Downgrade Protection (Experimental) [2] Claude does not seem to know and I can't find any clarifying documentation, just lots of open issues.
+
+The purpose is for writing an article on E2EE but I want to suggest clients that will alert on MitM tampering in a manor the person using the client can not accidentally ignore it. i.e. just click through a warning
+
+On the server side eJabberd and Prosody appear to be the only server daemons supporting XEP-0474 but I just can't find a definitive list of supported clients even if they are in the experimental phase. they may support SCRAM+ but do not alert on tampering using a valid cert.
+
+I am not interested in an LLM answer. LLM's do not appear to know the answer and instead give the official stance that XEP-0474 is experimental which holds no value for those wishing to experiment.
+
+[1] - https://news.ycombinator.com/item?id=37955264
+
+[2] - https://xmpp.org/extensions/xep-0474.html"
+49595797,habituation-by-design,https://news.ycombinator.com/item?id=49595797,"So this might be a stupid question but i notices that when i use my mac open or with a magic keyboard with a touchID field i get prompted to scan my finger to use a passkey. But whenever i use a secondary monitor and a non touchID keyboard all i need to do is press ""continue"" in the passkey dialoge.
+
+I get that passkeys are bound to the device and being logged into it is itself some sort of auth it just seems wierd to me to have a security step that is so easy to circumvent that they might as well not ask for my fingerprint at all."

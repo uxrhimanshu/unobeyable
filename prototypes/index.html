@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unobeyable · Prototypes</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="proto.css">
+</head>
+<body>
+<div class="proto-wrap">
+  <header class="proto-header">
+    <a class="proto-home" href="../component/index.html">Unobeyable</a>
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme-btn="light">Light</button>
+      <button type="button" data-theme-btn="dark">Dark</button>
+      <button type="button" data-theme-btn="system">System</button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="proto-title">Five situations, side by side with today</h1>
+    <p class="proto-intro">
+      Each scenario below is a real situation people described in a study of certificate
+      warnings. Open one to compare today's browser warning against the redesign,
+      screen by screen.
+    </p>
+
+    <ul class="scenario-list" id="scenario-list"></ul>
+  </main>
+
+  <script type="module">
+    import { SCENARIOS } from "./scenarios.js";
+    import { initThemeToggle } from "../component/theme.js";
+
+    const list = document.getElementById("scenario-list");
+    for (const s of SCENARIOS) {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <a class="scenario-card" href="scenario.html?id=${encodeURIComponent(s.id)}">
+          <h2>${s.name}</h2>
+          <p>${s.setup}</p>
+          <span class="code-chip">${s.code}</span>
+        </a>`;
+      list.appendChild(li);
+    }
+
+    initThemeToggle(document);
+  </script>
+</div>
+</body>
+</html>

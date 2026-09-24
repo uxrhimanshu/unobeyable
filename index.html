@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unobeyable · a warning people can obey</title>
+<meta name="description" content="A design response to a research finding: most security warnings are clicked through because they have no answer anyone can give. Seven principles traced to evidence, five situations, one accessible component, and the study that would test it.">
+<link rel="stylesheet" href="tokens/tokens.css">
+<link rel="stylesheet" href="component/trust-warning.css">
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: var(--step-0)/var(--lh-mid) var(--font-sans); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--s-4); }
+  .prose { max-width: var(--measure); }
+  .serif { font-family: var(--font-serif); line-height: var(--lh-prose); }
+  .mono { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: .02em; }
+  .muted { color: var(--muted); }
+
+  header.site { border-bottom: 1px solid var(--border); }
+  header.site .wrap { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); align-items: center; justify-content: space-between; min-height: 56px; }
+  header.site .name { font-weight: 600; text-decoration: none; color: var(--text); }
+  header.site nav { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); }
+  header.site nav a { color: var(--muted); text-decoration: none; padding: var(--s-2) 0; }
+  header.site nav a:hover { color: var(--text); text-decoration: underline; }
+
+  .hero { padding-top: var(--s-8); padding-bottom: var(--s-7); }
+  .hero .kicker { color: var(--muted); text-transform: uppercase; margin: 0 0 var(--s-4); }
+  .hero h1 { font-size: var(--step-6); line-height: var(--lh-tight); letter-spacing: -.02em; margin: 0 0 var(--s-5); max-width: 18ch; font-weight: 600; }
+  .hero .dek { font-size: var(--step-2); margin: 0 0 var(--s-5); max-width: 58ch; }
+  .roles { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: 0; margin: 0; list-style: none; }
+  .roles li { border: 1px solid var(--border-strong); border-radius: var(--r-pill); padding: var(--s-1) var(--s-3); color: var(--muted); }
+
+  section.block { padding: var(--s-7) 0; border-top: 1px solid var(--border); }
+  section.block > .wrap > .label { color: var(--muted); text-transform: uppercase; margin: 0 0 var(--s-3); }
+  h2 { font-size: var(--step-4); line-height: var(--lh-snug); margin: 0 0 var(--s-4); font-weight: 600; letter-spacing: -.01em; max-width: 28ch; }
+  h3 { font-size: var(--step-1); margin: 0 0 var(--s-2); font-weight: 600; }
+  p { margin: 0 0 var(--s-4); }
+
+  blockquote.pull { margin: var(--s-5) 0; padding: 0 0 0 var(--s-4); border-left: 3px solid var(--border-strong); font-family: var(--font-serif); font-size: var(--step-2); line-height: var(--lh-snug); max-width: 52ch; }
+  blockquote.pull cite { display: block; margin-top: var(--s-2); font: var(--step--1)/1.4 var(--font-mono); color: var(--muted); font-style: normal; }
+
+  /* Attention map */
+  .map { width: 100%; border-collapse: collapse; margin: var(--s-5) 0 var(--s-3); }
+  .map th, .map td { text-align: left; padding: var(--s-3) var(--s-3) var(--s-3) 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .map thead th { font: var(--step--1)/1.3 var(--font-mono); color: var(--muted); text-transform: uppercase; font-weight: 400; }
+  .map td:first-child { font-weight: 500; }
+  .chip { display: inline-flex; align-items: center; gap: var(--s-2); border-radius: var(--r-pill); padding: 2px var(--s-3) 2px var(--s-2); font: var(--step--1)/1.6 var(--font-mono); white-space: nowrap; }
+  .chip svg { width: 14px; height: 14px; flex: none; }
+  .chip.stop { background: var(--stop-soft); color: var(--stop); }
+  .chip.caution { background: var(--caution-soft); color: var(--caution); }
+  .chip.notice { background: var(--notice-soft); color: var(--notice); }
+  .chip.none { border: 1px dashed var(--border-strong); color: var(--muted); }
+  .dir { font: var(--step--1)/1.6 var(--font-mono); color: var(--muted); }
+  @media (max-width: 640px) {
+    .map thead { display: none; }
+    .map tr { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); padding: var(--s-3) 0; border-bottom: 1px solid var(--border); }
+    .map td { border: 0; padding: 0; }
+    .map td:first-child { grid-column: 1 / -1; }
+    .map td:last-child { grid-column: 1 / -1; }
+    .map td[data-h]::before { content: attr(data-h); display: block; font: var(--step--1)/1.3 var(--font-mono); color: var(--muted); text-transform: uppercase; margin-bottom: var(--s-1); }
+  }
+
+  /* Live comparison */
+  .switch { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-5) 0 var(--s-4); padding: 0; list-style: none; }
+  .switch button { min-height: var(--target); padding: 0 var(--s-4); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); border-radius: var(--r-pill); font: inherit; cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); align-items: start; }
+  @media (max-width: 860px) { .compare { grid-template-columns: 1fr; } }
+  .pane { min-width: 0; }
+  .pane > .mono { display: block; color: var(--muted); text-transform: uppercase; margin-bottom: var(--s-2); }
+  .today { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-6) var(--s-5); min-height: 100%; }
+  .today .t-icon { width: 36px; height: 36px; color: var(--muted); margin-bottom: var(--s-4); }
+  .today h3 { font-size: var(--step-3); font-weight: 600; margin-bottom: var(--s-3); }
+  .today p { color: var(--muted); }
+  .today .code { font: var(--step--1)/1.4 var(--font-mono); color: var(--muted); }
+  .today .row { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-5); }
+  .today .row span { min-height: var(--target); display: inline-flex; align-items: center; padding: 0 var(--s-4); border-radius: var(--r-md); border: 1px solid var(--border-strong); color: var(--muted); }
+  .today .row span:first-child { background: var(--chrome); color: var(--chrome-text); border-color: transparent; }
+  .quiet { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-5); }
+  .quiet .bar { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; background: var(--surface-2); border-radius: var(--r-pill); padding: var(--s-1) var(--s-3); font: var(--step--1)/1.8 var(--font-mono); color: var(--muted); margin-bottom: var(--s-4); }
+  .caption { margin-top: var(--s-3); font-size: var(--step--1); color: var(--muted); max-width: 60ch; }
+
+  /* Principles */
+  .principles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: var(--s-4); margin-top: var(--s-5); padding: 0; list-style: none; }
+  .principles li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); }
+  .principles .pid { color: var(--muted); }
+  .principles h3 { font-size: var(--step-1); line-height: var(--lh-snug); margin: 0; }
+  .principles p { font-family: var(--font-serif); line-height: var(--lh-prose); margin: 0; color: var(--text); }
+  .principles .ev { margin-top: auto; padding-top: var(--s-3); border-top: 1px solid var(--border); font-size: var(--step--1); color: var(--muted); }
+  .principles .ev q { font-family: var(--font-serif); font-size: var(--step-0); color: var(--text); display: block; margin-bottom: var(--s-1); }
+
+  /* Cards linking out */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--s-4); margin-top: var(--s-5); padding: 0; list-style: none; }
+  .cards a { display: block; height: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-5); color: var(--text); text-decoration: none; transition: border-color var(--t-fast); }
+  .cards a:hover { border-color: var(--text); }
+  .cards .mono { color: var(--muted); display: block; margin-bottom: var(--s-2); text-transform: uppercase; }
+  .cards h3 { margin-bottom: var(--s-2); }
+  .cards p { color: var(--muted); margin: 0; font-size: var(--step--1); line-height: var(--lh-mid); }
+
+  .decisions { padding: 0; margin: var(--s-5) 0 0; list-style: none; display: grid; gap: var(--s-4); max-width: 72ch; }
+  .decisions li { display: grid; grid-template-columns: 5.5rem 1fr; gap: var(--s-3); }
+  .decisions .tag { font: var(--step--1)/1.9 var(--font-mono); text-transform: uppercase; }
+  .decisions .tag.no { color: var(--stop); }
+  .decisions .tag.yes { color: var(--notice); }
+  .decisions p { margin: 0; font-family: var(--font-serif); line-height: var(--lh-prose); }
+  @media (max-width: 520px) { .decisions li { grid-template-columns: 1fr; gap: 0; } }
+
+  .status { display: inline-flex; gap: var(--s-2); align-items: center; border: 1px solid var(--border-strong); border-radius: var(--r-pill); padding: var(--s-1) var(--s-3); margin-bottom: var(--s-4); }
+
+  footer { border-top: 1px solid var(--border); padding: var(--s-6) 0 var(--s-8); color: var(--muted); font-size: var(--step--1); }
+  footer a { color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-6); justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="name" href="./">unobeyable</a>
+    <nav aria-label="Sections">
+      <a href="prototypes/">Prototypes</a>
+      <a href="component/">Component</a>
+      <a href="harness/">Test harness</a>
+      <a href="https://github.com/uxrhimanshu/unobeyable">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <p class="kicker mono">A design response to a research finding</p>
+    <h1>Designing a warning people can obey</h1>
+    <p class="dek serif">A study of how technical people talk about security warnings found that most click-throughs are not careless. The warning has no answer anyone can give. This is the redesign: seven principles traced to that evidence, five situations the browser can already tell apart, a component built to ship, and the study that would show whether it works.</p>
+    <ul class="roles mono" aria-label="Work in this project">
+      <li>Research synthesis</li><li>Interaction design</li><li>UX writing</li><li>Front-end build</li><li>Accessibility</li><li>Evaluation design</li>
+    </ul>
+  </div>
+
+  <section class="block" aria-labelledby="h-finding">
+    <div class="wrap">
+      <p class="label mono">01 · The finding</p>
+      <h2 id="h-finding">The warning has one meaning. The situation has another.</h2>
+      <div class="prose serif">
+        <p>In <a href="https://github.com/uxrhimanshu/clicked-through">clicked-through</a> I coded 76 items from Hacker News threads about security warnings. I expected people who understood the risk and proceeded anyway. That was the smallest thing in the corpus. What dominated was people meeting a warning that could not be obeyed.</p>
+        <p>A browser says a certificate can't be trusted while you are connecting to a printer on your own network. There is no certificate that printer could get that the browser would accept. The only answer the warning allows is to go back, and going back means not doing your job. So people proceed, every day, and learn that the warning means nothing. The one time it does mean something, it looks exactly the same.</p>
+      </div>
+      <blockquote class="pull">
+        <q>your users will inevitably learn to ignore certificate errors</q>
+        <cite><a href="https://news.ycombinator.com/item?id=36507168">item 36507168</a> · habituation-by-design</cite>
+      </blockquote>
+      <p class="prose">The study stopped at the finding. This project asks what the interface should do instead.</p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-attention">
+    <div class="wrap">
+      <p class="label mono">02 · Where attention goes</p>
+      <h2 id="h-attention">Stop is kept for the case that means it</h2>
+      <p class="prose serif">Today every one of these situations gets the same full-page stop. The browser already knows enough to tell them apart: whether the address is private, whether you've been here before, whether the certificate changed, who issued it. The redesign uses that to spend attention where it carries information. It is quieter in five of these eight states. Where a trusted certificate has changed it stays a stop and loses the proceed button, because that is the moment an attack would look like. And for phishing it moves the warning from the click to the password.</p>
+      <table class="map">
+        <thead><tr><th scope="col">Situation</th><th scope="col">Today</th><th scope="col">Redesign</th><th scope="col">Why</th></tr></thead>
+        <tbody id="map-body"></tbody>
+      </table>
+      <p class="caption">Generated from <span class="mono">classify.js</span> running on the scenario fixtures, so this table can't disagree with the prototypes.</p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-compare">
+    <div class="wrap">
+      <p class="label mono">03 · Side by side</p>
+      <h2 id="h-compare">Same situation, two warnings</h2>
+      <p class="prose serif">These are the live component, not screenshots. Every button works, and the full interactive versions with every state are in the <a href="prototypes/">prototypes</a>.</p>
+      <div class="switch" role="group" aria-label="Choose a situation" id="switch"></div>
+      <div class="compare">
+        <div class="pane">
+          <span class="mono">Today · generic recreation</span>
+          <div class="today" id="today" aria-live="polite"></div>
+        </div>
+        <div class="pane">
+          <span class="mono">Redesign</span>
+          <div id="redesign"></div>
+        </div>
+      </div>
+      <p class="caption" id="compare-caption"></p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-principles">
+    <div class="wrap">
+      <p class="label mono">04 · Principles</p>
+      <h2 id="h-principles">Seven principles, each resting on coded evidence</h2>
+      <p class="prose serif">Each principle cites the items it comes from. A script checks that every cited item exists, carries the code claimed, and contains the quoted words verbatim, so a principle can't quietly outgrow its evidence.</p>
+      <ul class="principles" id="principles"></ul>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-decisions">
+    <div class="wrap">
+      <p class="label mono">05 · Decisions</p>
+      <h2 id="h-decisions">What I chose, and what I rejected</h2>
+      <ul class="decisions">
+        <li><span class="tag no">Rejected</span><p>Adding friction to the proceed link. It is the usual response to click-through, and the corpus records what it produces: when the compliant path doesn't exist, people build structural workarounds that are worse than clicking through.</p></li>
+        <li><span class="tag yes">Chose</span><p>Friction only where it carries information. After a trusted certificate changes, the way forward asks for four characters printed on the device itself. It is a check only someone with the device in front of them can pass.</p></li>
+        <li><span class="tag yes">Chose</span><p>Remembering trust per certificate, not per host. That is what makes silence on later visits safe rather than merely quiet.</p></li>
+        <li><span class="tag no">Rejected</span><p>Quietening renewals the browser can't distinguish from an attack. A server that makes a new key every six months still stops people. The report to its owner says why, because the fix is theirs.</p></li>
+        <li><span class="tag yes">Chose</span><p>Never the word “secure”. A device you trusted by hand shows “Trusted by you on 3 March”, never a padlock, so making the indicator go away can't become the goal.</p></li>
+      </ul>
+      <p style="margin-top: var(--s-5)"><a href="https://github.com/uxrhimanshu/unobeyable/blob/main/DECISIONS.md">All ten decisions, with the evidence and weak points →</a></p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-build">
+    <div class="wrap">
+      <p class="label mono">06 · Built to ship</p>
+      <h2 id="h-build">One component, one function that decides</h2>
+      <div class="prose serif">
+        <p>Most of this design is behaviour across visits: what happens the second time, what happens after a change. A static frame can't show that, so the design medium is code. The logic lives in one pure function, <span class="mono">classify()</span>, where every branch names the principle it implements, and the tests are the specification.</p>
+        <p>The <span class="mono">&lt;trust-warning&gt;</span> component carries severity in shape, label and words as well as colour, moves focus to the heading on every change of view, and never lets Escape mean proceed. It has no dependencies, no build step and makes no network requests.</p>
+      </div>
+      <ul class="cards">
+        <li><a href="prototypes/"><span class="mono">Prototypes</span><h3>Five situations, every state</h3><p>Today and the redesign, step by step, with the principle behind each state.</p></a></li>
+        <li><a href="component/"><span class="mono">Component</span><h3>&lt;trust-warning&gt; docs</h3><p>Anatomy, severity, states, API, copy rules and accessibility notes.</p></a></li>
+        <li><a href="https://github.com/uxrhimanshu/unobeyable/blob/main/component/copy.js"><span class="mono">UX writing</span><h3>Every word, in one file</h3><p>The copy and the rules it is held to. Tests fail if a string says “secure”.</p></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-test">
+    <div class="wrap">
+      <p class="label mono">07 · How it would be tested</p>
+      <h2 id="h-test">The study, designed and not yet run</h2>
+      <p class="status mono">Instrument built · no participants yet</p>
+      <div class="prose serif">
+        <p>Nothing here is evidence that the redesign works. The <a href="harness/">test harness</a> runs a counterbalanced comparison in the browser: four tasks, each shown as today or the redesign, recording the decision, time to decide, confidence, and an answer to “what do you think is happening?”. Data stays in the browser until exported.</p>
+        <p>The hypothesis I most want held to account is the one that could embarrass the design. For the printer, the redesign should <em>not</em> lower the rate at which people proceed. It is meant to make a reasonable decision easy, not to deter it. If it lowers that rate, it is working as friction, and the whole argument above says friction is the wrong tool.</p>
+      </div>
+      <p><a href="https://github.com/uxrhimanshu/unobeyable/blob/main/STUDY-PLAN.md">Study plan, measures and what it can't show →</a></p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-limits">
+    <div class="wrap">
+      <p class="label mono">08 · Limits</p>
+      <h2 id="h-limits">What this doesn't claim</h2>
+      <div class="prose serif">
+        <p>The evidence comes from one technical, English-speaking forum, and the redesign makes no claim about non-technical users. The changed-certificate case is the design's strongest move and its thinnest evidence: the corpus argues for it but never shows someone meeting it. Recognising inspection products needs a maintained list nobody has built here. Public sites with invalid certificates are deliberately left exactly as they are.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Himanshu Kalra · <a href="https://uxrhimanshu.com">uxrhimanshu.com</a></span>
+    <span>Built on <a href="https://github.com/uxrhimanshu/clicked-through">clicked-through</a> · see also <a href="https://the-human-element.netlify.app">the human element</a></span>
+  </div>
+</footer>
+
+<script type="module">
+  import { classify } from "./component/classify.js";
+  import { COPY, fill } from "./component/copy.js";
+  import { SCENARIOS } from "./prototypes/scenarios.js";
+  import { PRINCIPLES } from "./prototypes/principles.js";
+  import "./component/trust-warning.js";
+
+  // Same shapes as the component: severity is carried by shape and word, not colour alone.
+  const ICON = {
+    stop: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 2h7.6L18 6.2v7.6L13.8 18H6.2L2 13.8V6.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    caution: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.6 18 16.4H2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    notice: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.2 10.3l2.4 2.4 5.2-5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    none: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.5 2.5"/></svg>',
+  };
+  const WORD = { stop: "Stop", caution: "Decision", notice: "Indicator only", none: "Nothing" };
+  const chip = (sev) => `<span class="chip ${sev}">${ICON[sev]}${WORD[sev]}</span>`;
+  const RANK = { none: 0, notice: 1, caution: 2, stop: 3 };
+  const WHY = {
+    "local-unverifiable": "P1 · P2", "remembered": "P3 · P4", "changed-after-trust": "P6",
+    "renewed-same-key": "P3 · P6", "inspected-by-network": "P2 · P5",
+    "link-opened": "P7", "credential-on-unfamiliar": "P7",
+  };
+
+  // 02 · attention map
+  const rows = [];
+  for (const s of SCENARIOS) for (const step of s.steps) {
+    const r = classify(step.ctx);
+    const today = s.id === "phishing" && step.state === "credential" ? "none" : "stop";
+    const dir = RANK[r.severity] > RANK[today] ? "louder" : RANK[r.severity] < RANK[today] ? "quieter"
+      : r.situation === "changed-after-trust" ? "no proceed" : "same";
+    rows.push(`<tr><td>${s.name}<br><span class="dir">${step.label}</span></td>
+      <td data-h="Today">${chip(today)}</td>
+      <td data-h="Redesign">${chip(r.severity)} <span class="dir">${dir}</span></td>
+      <td data-h="Why" class="mono muted">${WHY[r.situation] || ""}</td></tr>`);
+  }
+  document.getElementById("map-body").innerHTML = rows.join("");
+
+  // 04 · principles
+  document.getElementById("principles").innerHTML = PRINCIPLES.principles.map((p) => {
+    const e = p.evidence[0];
+    return `<li><span class="pid mono">${p.id}</span><h3>${p.title}</h3><p>${p.body}</p>
+      <div class="ev"><q>${e.quote}</q><a href="https://news.ycombinator.com/item?id=${e.item_id}">item ${e.item_id}</a> · <span class="mono">${e.code}</span>${p.evidence.length > 1 ? ` · +${p.evidence.length - 1} more` : ""}</div></li>`;
+  }).join("");
+
+  // 03 · live comparison
+  const PICK = [
+    ["printer", 0, "A printer on the office network"],
+    ["changed", 0, "A trusted device, new certificate"],
+    ["inspection", 0, "A school network"],
+    ["phishing", 1, "An unfamiliar sign-in page"],
+  ];
+  const sw = document.getElementById("switch");
+  const today = document.getElementById("today");
+  const redesign = document.getElementById("redesign");
+  const caption = document.getElementById("compare-caption");
+  const warnIcon = '<svg class="t-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M12 3 22 20H2z M12 10v4 M12 16.5v.5"/></svg>';
+
+  function show(i) {
+    const [id, stepIdx] = PICK[i];
+    const s = SCENARIOS.find((x) => x.id === id);
+    const ctx = s.steps[stepIdx].ctx;
+    [...sw.children].forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+    today.innerHTML = id === "phishing"
+      ? `${warnIcon}<h3>${s.today.headline}</h3><p>${s.today.code}</p><p class="code">Shown when the link is clicked</p>`
+      : `${warnIcon}<h3>${s.today.headline}</h3><p>Attackers might be trying to steal your information from ${ctx.host}.</p><p class="code">${s.today.code}</p><div class="row"><span>Back to safety</span><span>Advanced</span></div>`;
+    const el = document.createElement("trust-warning");
+    el.context = ctx;
+    el.setAttribute("open", "");
+    redesign.replaceChildren(el);
+    caption.textContent = s.setup;
+  }
+  sw.innerHTML = PICK.map(([, , label]) => `<button type="button" aria-pressed="false">${label}</button>`).join("");
+  [...sw.children].forEach((b, i) => b.addEventListener("click", () => show(i)));
+  show(0);
+</script>
+</body>
+</html>

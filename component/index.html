@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unobeyable · trust-warning</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="trust-warning.css">
+<link rel="stylesheet" href="doc.css">
+</head>
+<body>
+<div class="doc-wrap">
+  <header class="doc-header">
+    <div>
+      <p class="doc-kicker">Unobeyable · component reference</p>
+      <h1 class="doc-title">&lt;trust-warning&gt;</h1>
+    </div>
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme-btn="light">Light</button>
+      <button type="button" data-theme-btn="dark">Dark</button>
+      <button type="button" data-theme-btn="system">System</button>
+    </div>
+  </header>
+
+  <div class="doc-layout">
+    <nav class="doc-toc" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#anatomy">Anatomy</a>
+      <a href="#severity">Severity</a>
+      <a href="#states">States</a>
+      <a href="#api">API</a>
+      <a href="#copy-rules">Copy rules</a>
+      <a href="#accessibility">Accessibility</a>
+      <a href="#using-it">Using it</a>
+    </nav>
+    <main class="doc-main">
+
+    <div>
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p>
+          <code>&lt;trust-warning&gt;</code> is the one custom element behind every
+          redesigned certificate and link warning in this project. It takes a
+          connection's details, runs them through <code>classify()</code>, and
+          renders whatever that situation calls for: nothing, a quiet indicator, or
+          an interrupting panel. It never decides on its own what a situation means;
+          that logic lives entirely in <code>component/classify.js</code>.
+        </p>
+        <p>
+          It renders into light DOM, inside a wrapper carrying the class
+          <code>tw</code>, so the page's own token values (light or dark) apply
+          without any shadow-DOM boundary to cross.
+        </p>
+      </section>
+
+      <section class="doc-section" id="anatomy">
+        <h2>Anatomy</h2>
+        <p>A caution or stop panel, top to bottom, with the real markup below it.</p>
+        <div class="anatomy-diagram">
+          <div class="anatomy-panel-slot" id="anatomy-panel"></div>
+          <ol class="anatomy-callouts" id="anatomy-callouts"></ol>
+        </div>
+      </section>
+
+      <section class="doc-section" id="severity">
+        <h2>Severity</h2>
+        <p>Four levels. Colour is never the only signal: each also has its own icon shape and text label.</p>
+        <div class="severity-grid">
+          <div class="severity-card is-none">
+            <span class="swatch">None</span>
+            <p>No interrupt, no indicator. The connection needs no comment.</p>
+          </div>
+          <div class="severity-card is-notice">
+            <span class="swatch">Notice</span>
+            <p>No interrupt. A quiet, persistent indicator pill (circle with a check).</p>
+          </div>
+          <div class="severity-card is-caution">
+            <span class="swatch">Caution</span>
+            <p>Interrupts. Proceeding is a reasonable, remembered choice (triangle).</p>
+          </div>
+          <div class="severity-card is-stop">
+            <span class="swatch">Stop</span>
+            <p>Interrupts. No proceed action on the first screen (octagon).</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section" id="states">
+        <h2>States</h2>
+        <p>Every situation <code>classify()</code> can return, each rendered from a real scenario in <code>prototypes/scenarios.js</code>.</p>
+        <div class="states-grid" id="states-grid"></div>
+      </section>
+
+      <section class="doc-section" id="api">
+        <h2>API</h2>
+        <table class="api-table">
+          <thead>
+            <tr><th>Property / attribute / event</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>context</td><td>property, object</td>
+              <td>The classify() input, plus optional display vars <code>org</code>, <code>orgTeam</code>, <code>renewalChanges</code>. Setting it re-renders.</td>
+            </tr>
+            <tr>
+              <td>open</td><td>attribute, boolean</td>
+              <td>Whether the panel or indicator is currently shown. Toggling it re-renders.</td>
+            </tr>
+            <tr>
+              <td>result</td><td>property, object (read-only)</td>
+              <td>The classify() output for the current context: situation, severity, actions, reportTo.</td>
+            </tr>
+            <tr>
+              <td>tw-decision</td><td>event, CustomEvent</td>
+              <td>Fires on every action taken. <code>detail: {action, situation, severity, view}</code>, bubbles.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="doc-section" id="copy-rules">
+        <h2>Copy rules</h2>
+        <p>From the top of <code>component/copy.js</code>:</p>
+        <ul class="doc-list">
+          <li>The title says what is happening, not how the reader should feel.</li>
+          <li>Say what the browser knows and what it cannot know, in that order.</li>
+          <li>Every action label is a verb phrase that describes its outcome.</li>
+          <li>"Secure" is never used. The browser only knows "verified" or "not verified".</li>
+          <li>No exclamation marks, no "Warning:", no "Your connection is not private".</li>
+        </ul>
+
+        <div class="dodont-grid">
+          <div class="dodont-row">
+            <div class="dodont-cell is-do"><span class="dodont-tag">Do</span>&ldquo;{host} is a device on your own network&rdquo;</div>
+            <div class="dodont-cell is-dont"><span class="dodont-tag">Don't</span>&ldquo;Your connection is not private&rdquo;</div>
+          </div>
+          <div class="dodont-row">
+            <div class="dodont-cell is-do"><span class="dodont-tag">Do</span>&ldquo;You chose to trust {host}&rdquo;</div>
+            <div class="dodont-cell is-dont"><span class="dodont-tag">Don't</span>&ldquo;This site is now secure&rdquo;</div>
+          </div>
+          <div class="dodont-row">
+            <div class="dodont-cell is-do"><span class="dodont-tag">Do</span>&ldquo;{host} is presenting a different certificate&rdquo;</div>
+            <div class="dodont-cell is-dont"><span class="dodont-tag">Don't</span>&ldquo;Warning: certificate mismatch&rdquo;</div>
+          </div>
+          <div class="dodont-row">
+            <div class="dodont-cell is-do"><span class="dodont-tag">Do</span>&ldquo;This network is inspecting encrypted traffic&rdquo;</div>
+            <div class="dodont-cell is-dont"><span class="dodont-tag">Don't</span>&ldquo;Your connection is not private&rdquo;</div>
+          </div>
+          <div class="dodont-row">
+            <div class="dodont-cell is-do"><span class="dodont-tag">Do</span>&ldquo;You haven't signed in to {host} before&rdquo;</div>
+            <div class="dodont-cell is-dont"><span class="dodont-tag">Don't</span>&ldquo;This link looks suspicious&rdquo;</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section" id="accessibility">
+        <h2>Accessibility</h2>
+        <ul class="doc-list">
+          <li><strong>Focus order.</strong> When the panel opens, or its view state changes (warning to reviewing, to reporting, and so on), focus moves to the <code>&lt;h2&gt;</code> title, which carries <code>tabindex="-1"</code>.</li>
+          <li><strong>Escape.</strong> Closes the report, review, or fingerprint-comparison sub-view back to the base warning. Escape never proceeds and never trusts a device: there is no path from Escape to a resolved, trusted state.</li>
+          <li><strong>alertdialog role.</strong> Caution and stop panels are a <code>&lt;section role="alertdialog" aria-labelledby aria-describedby&gt;</code>, so assistive technology announces them as an interrupting dialog tied to the title and body.</li>
+          <li><strong>Colour independence.</strong> Every severity also has a distinct icon shape (circle, triangle, octagon) and a text label, so nothing is communicated by colour alone.</li>
+          <li><strong>Targets.</strong> Every interactive control has a minimum hit area of <code>var(--target)</code> (44px), including on narrow screens where buttons stack full-width.</li>
+          <li><strong>Reduced motion.</strong> The panel's entry animation is skipped entirely under <code>prefers-reduced-motion: reduce</code>.</li>
+        </ul>
+      </section>
+
+      <section class="doc-section" id="using-it">
+        <h2>Using it</h2>
+        <p>Import the element, set its context, and listen for decisions.</p>
+        <pre class="code-sample">import "./component/trust-warning.js";
+
+const warning = document.createElement("trust-warning");
+warning.context = {
+  kind: "tls",
+  host: "192.168.1.40",
+  certProblem: "self-signed",
+  fingerprint: "4F:9C:1E:...",
+  publicKey: "spki:7d1f0a",
+  issuer: "192.168.1.40",
+  accepted: null,
+};
+warning.open = true;
+document.body.appendChild(warning);
+
+warning.addEventListener("tw-decision", (e) => {
+  console.log(e.detail.action, e.detail.situation);
+});</pre>
+      </section>
+    </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="doc-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "source": "https://github.com/uxrhimanshu/clicked-through",
+  "note": "Every item_id must appear in vendor/coded.csv under the code given, and every quote must appear verbatim in that item's text. python3 check_trace.py enforces both.",
+  "principles": [
+    {
+      "id": "P1",
+      "title": "Name the compliant path, or say there isn't one",
+      "body": "Today's warning implies that something is wrong and that someone could fix it. For a device on a private network there is usually no certificate the browser would accept, so the warning asks for a correction nobody can make. The redesign says so, and offers the best check that does exist.",
+      "evidence": [
+        {"item_id": "26584730", "code": "warning-cannot-be-satisfied", "quote": "it can't serve HTTPS because it isn't on the open internet to reach Let's Encrypt"},
+        {"item_id": "37321957", "code": "warning-cannot-be-satisfied", "quote": "a self-signed SSL certificate has to be used; you’ll need to click through the warnings from the browser"},
+        {"item_id": "36512276", "code": "trust-store-unmaintainable", "quote": "you're going to see certificate warning messages"}
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "Say what situation this is, using what the browser already knows",
+      "body": "The browser knows whether an address is on a private network, whether it has seen this host before, and who issued the certificate. Today it discards all of that and shows one message meaning 'you may be under attack'. A printer on the office LAN, a school firewall and an actual interception are three different situations, and each gets its own explanation.",
+      "evidence": [
+        {"item_id": "26584730", "code": "warning-cannot-be-satisfied", "quote": "gets treated as a sign of evil intent by all browsers"},
+        {"item_id": "41480034", "code": "sanctioned-mitm", "quote": "Is this some kind of MITM-Attack on me"},
+        {"item_id": "41482609", "code": "sanctioned-mitm", "quote": "The Fortigate conducts an organizationally sanctioned MITM attack on your web browsing"}
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "Treat frequency as a design parameter",
+      "body": "A warning that fires every time for a situation that never changes teaches people to dismiss it. Once someone has made a considered decision about one device, that decision is remembered for that device and that certificate only, and the interrupt stops.",
+      "evidence": [
+        {"item_id": "36507168", "code": "habituation-by-design", "quote": "your users will inevitably learn to ignore certificate errors"},
+        {"item_id": "41436340", "code": "habituation-by-design", "quote": "users eventually learn to just ignore these warnings"},
+        {"item_id": "45533836", "code": "habituation-by-design", "quote": "nobody reads them because they probably already know"}
+      ]
+    },
+    {
+      "id": "P4",
+      "title": "Dismissal is not resolution",
+      "body": "When the only signal of success is that the red mark goes away, people optimise for the red mark, sometimes by doing something worse. After a decision the redesign keeps a quiet, persistent state in the address bar that says what was decided and when, so the site is never shown as simply 'secure'.",
+      "evidence": [
+        {"item_id": "36508087", "code": "removing-the-warning-is-the-goal", "quote": "But it gets rid of the red X in a browser so tick"},
+        {"item_id": "33107611", "code": "workaround-becomes-standard", "quote": "that's way more hassle than just making everything public and buying a domain"}
+      ]
+    },
+    {
+      "id": "P5",
+      "title": "Route the problem to whoever can fix it",
+      "body": "The person reading the warning usually cannot fix the certificate. Someone else can: the device's owner, the network admin, the IT team. Every redesigned warning offers a report addressed to that person, with the technical details already filled in, so the cost of doing the right thing is one click rather than a ticket written from memory.",
+      "evidence": [
+        {"item_id": "36506195", "code": "org-friction-as-cause", "quote": "self-signed certs were the only option if we wanted to automate"},
+        {"item_id": "36506755", "code": "org-friction-as-cause", "quote": "Any slight deviation and your ticket is closed weeks after you opened it"},
+        {"item_id": "45534624", "code": "org-friction-as-cause", "quote": "the it department will dive deep to whitelist it"}
+      ]
+    },
+    {
+      "id": "P6",
+      "title": "Save loudness for change",
+      "body": "A certificate that someone has already accepted can only be swapped by an attacker if the swap is noticed and ignored. So the moment that deserves the full interrupt is not the first visit to a known device but a change after trust. That is the one case where the redesign is louder than today, and it has no proceed button on its first screen.",
+      "evidence": [
+        {"item_id": "36508087", "code": "removing-the-warning-is-the-goal", "quote": "if someone has accepted and cached the self-signed cert you can't MITM them without throwing an error"},
+        {"item_id": "41436340", "code": "habituation-by-design", "quote": "trust-on-first-use (TOFU) model"},
+        {"item_id": "49049796", "code": "designing-against-click-through", "quote": "in a manor the person using the client can not accidentally ignore it"}
+      ]
+    },
+    {
+      "id": "P7",
+      "title": "Warn at the moment of harm, not at a proxy for it",
+      "body": "Phishing controls punish the click, but the click is ordinary work and the harm is typing a password into the wrong site. The redesign stays silent when a link is opened and speaks up when a password field is used on a domain the person and their organisation have never signed in to.",
+      "evidence": [
+        {"item_id": "45530891", "code": "control-teaches-opposite", "quote": "I would think clicking a link is fine, but entering credentials is not"},
+        {"item_id": "45532736", "code": "control-teaches-opposite", "quote": "they phish their employees 100 times a day"},
+        {"item_id": "45532990", "code": "control-as-liability-transfer", "quote": "I figured I would click the link to investigate further"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+/* Harness styles. Uses only tokens from tokens/tokens.css. Calm, legible,
+   research-instrument tone: no decoration, no motion beyond what tokens allow. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: var(--lh-mid);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--accent); }
+
+.h-banner {
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-align: center;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.h-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--s-6) var(--s-4);
+}
+
+.h-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-6);
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.h-card h1, .h-card h2 {
+  font-family: var(--font-sans);
+  line-height: var(--lh-tight);
+  margin-top: 0;
+}
+
+.h-card h1 { font-size: var(--step-4); }
+.h-card h2 { font-size: var(--step-3); }
+
+.h-prose {
+  font-family: var(--font-serif);
+  line-height: var(--lh-prose);
+  max-width: var(--measure);
+}
+
+.h-prose p { margin: 0 0 var(--s-4); }
+
+.h-mono {
+  font-family: var(--font-mono);
+}
+
+.h-list {
+  padding-left: var(--s-5);
+  font-family: var(--font-serif);
+  line-height: var(--lh-prose);
+}
+
+.h-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-6);
+}
+
+.h-btn {
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  padding: var(--s-3) var(--s-5);
+  min-height: var(--target);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.h-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.h-btn--primary {
+  background: var(--text);
+  color: var(--surface);
+  border-color: var(--text);
+}
+
+.h-field {
+  display: block;
+  margin-top: var(--s-5);
+}
+
+.h-field label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+  color: var(--muted);
+  margin-bottom: var(--s-2);
+}
+
+.h-field textarea {
+  width: 100%;
+  min-height: 6rem;
+  font-family: var(--font-serif);
+  font-size: var(--step-0);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+}
+
+.h-field textarea:focus-visible,
+.h-radiogroup input:focus-visible,
+.h-btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.h-radiogroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+}
+
+.h-radiogroup label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--target);
+}
+
+.h-progress {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  margin-bottom: var(--s-4);
+}
+
+/* Mock browser chrome used by the "today" condition. Generic by design: no
+   browser logos, colours or layouts copied from a real product. */
+.h-chrome {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-top: var(--s-5);
+}
+
+.h-chrome__bar {
+  background: var(--chrome);
+  color: var(--chrome-text);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  padding: var(--s-2) var(--s-3);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.h-chrome__body {
+  background: var(--surface);
+  padding: var(--s-6);
+  min-height: 16rem;
+}
+
+.h-interstitial h2 {
+  font-size: var(--step-3);
+  margin-top: 0;
+}
+
+.h-interstitial p {
+  font-family: var(--font-serif);
+  line-height: var(--lh-prose);
+  max-width: var(--measure);
+}
+
+.h-interstitial__code {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.h-table-wrap {
+  overflow-x: auto;
+}
+
+table.h-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+table.h-table th, table.h-table td {
+  border: 1px solid var(--border);
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+table.h-table th {
+  background: var(--surface-2);
+}
+
+.h-confirm {
+  border: 1px solid var(--stop);
+  background: var(--stop-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  margin-top: var(--s-4);
+}
+
+.h-confirm p { margin: 0 0 var(--s-3); font-family: var(--font-sans); }
+
+.h-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 480px) {
+  .h-card { padding: var(--s-4); }
+  .h-main { padding: var(--s-4) var(--s-3); }
+}
+
+[hidden] { display: none !important; }
