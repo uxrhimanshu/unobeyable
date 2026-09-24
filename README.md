@@ -80,6 +80,8 @@ node --test              # classifier, view states, copy rules, harness logic
 
 ## Built with
 
+Built with Claude Code, working from the clicked-through evidence. That is one more reason every principle is traced to coded items by `check_trace.py`: the argument can be checked without trusting whoever typed it.
+
 No framework, no build step, no dependencies. HTML, CSS and JavaScript modules, served
 as static files from GitHub Pages. Tests use Node's built-in runner.
 
